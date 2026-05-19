@@ -3,7 +3,6 @@ import studio from '../content/themes/studio.json';
 import tech from '../content/themes/tech.json';
 import warm from '../content/themes/warm.json';
 import monochrome from '../content/themes/monochrome.json';
-import { clientThemes } from '../client/theme';
 
 export type ThemePresetName = string;
 
@@ -50,7 +49,9 @@ export interface ThemePreset {
   atmosphere?: string;
 }
 
-const frameworkRegistry: Record<string, ThemePreset> = {
+/** The 5 framework theme presets. Consumers can merge their own
+   `clientThemes` map before passing to `listThemes` / `loadTheme`. */
+export const frameworkThemes: Record<string, ThemePreset> = {
   editorial: editorial as ThemePreset,
   studio: studio as ThemePreset,
   tech: tech as ThemePreset,
@@ -58,16 +59,14 @@ const frameworkRegistry: Record<string, ThemePreset> = {
   monochrome: monochrome as ThemePreset,
 };
 
-const registry: Record<string, ThemePreset> = {
-  ...frameworkRegistry,
-  ...clientThemes,
-};
-
-export function listThemes(): ThemePresetName[] {
+export function listThemes(registry: Record<string, ThemePreset> = frameworkThemes): ThemePresetName[] {
   return Object.keys(registry);
 }
 
-export function loadTheme(name: ThemePresetName): ThemePreset {
+export function loadTheme(
+  name: ThemePresetName,
+  registry: Record<string, ThemePreset> = frameworkThemes,
+): ThemePreset {
   const theme = registry[name];
   if (!theme) {
     throw new Error(`Unknown theme preset: ${name}`);

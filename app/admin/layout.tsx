@@ -1,10 +1,8 @@
 export default function AdminLayout({
   children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+}: Readonly<{ children: React.ReactNode }>) {
   return (
-    <div className="flex h-screen overflow-hidden">
+    <div style={{ height: '100vh', overflow: 'hidden' }}>
       {children}
     </div>
   );

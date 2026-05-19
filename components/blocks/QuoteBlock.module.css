@@ -1,0 +1,83 @@
+.figure {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-10);
+  align-items: center;
+  text-align: center;
+  margin: 0;
+}
+
+.quote {
+  font-family: var(--font-display);
+  font-size: var(--text-3xl);
+  line-height: var(--leading-snug);
+  color: var(--foreground);
+  font-weight: var(--weight-regular);
+  letter-spacing: -0.01em;
+  max-width: 40rem;
+  position: relative;
+  font-style: italic;
+}
+
+.quote::before {
+  content: '“';
+  position: absolute;
+  top: -1.2rem;
+  left: -1.5rem;
+  font-size: var(--text-6xl);
+  color: var(--muted-foreground);
+  line-height: 1;
+  opacity: 0.4;
+}
+
+.quote::after {
+  content: '”';
+  position: absolute;
+  bottom: -2.2rem;
+  right: -1rem;
+  font-size: var(--text-6xl);
+  color: var(--muted-foreground);
+  line-height: 1;
+  opacity: 0.4;
+}
+
+.attribution {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.avatar {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 9999px;
+  object-fit: cover;
+}
+
+.author {
+  font-size: var(--text-base);
+  font-weight: var(--weight-medium);
+  color: var(--foreground);
+}
+
+.role {
+  font-size: var(--text-sm);
+  color: var(--muted-foreground);
+  margin-left: var(--space-1);
+}
+
+@media (max-width: 640px) {
+  .quote {
+    font-size: var(--text-2xl);
+  }
+  .quote::before {
+    font-size: var(--text-5xl);
+    top: -0.8rem;
+    left: -0.8rem;
+  }
+  .quote::after {
+    font-size: var(--text-5xl);
+    bottom: -1.5rem;
+    right: -0.5rem;
+  }
+}

@@ -1,0 +1,23 @@
+/* Shared classes used across multiple block render components.
+   Per-block modules can compose from these via `composes`. */
+
+.block {
+  padding-block: var(--space-10);
+}
+
+.block-tight {
+  padding-block: var(--space-6);
+}
+
+.block-loose {
+  padding-block: var(--space-16);
+}
+
+.fullBleed {
+  width: 100%;
+  position: relative;
+}
+
+.alignLeft { display: flex; justify-content: flex-start; }
+.alignCenter { display: flex; justify-content: center; }
+.alignRight { display: flex; justify-content: flex-end; }

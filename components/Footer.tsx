@@ -1,4 +1,4 @@
-import { Separator } from '@/components/ui/separator';
+import styles from './Footer.module.css';
 
 interface FooterProps {
   siteName: string;
@@ -6,11 +6,8 @@ interface FooterProps {
 
 export function Footer({ siteName }: FooterProps) {
   return (
-    <>
-      <Separator />
-      <footer className="py-8 text-center text-sm text-muted-foreground">
-        <p>&copy; {new Date().getFullYear()} {siteName}</p>
-      </footer>
-    </>
+    <footer className={styles.footer}>
+      <p>&copy; {new Date().getFullYear()} {siteName}</p>
+    </footer>
   );
 }

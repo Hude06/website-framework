@@ -51,29 +51,37 @@ export type ClientBlock = AcmeHeroBlock | AcmeFeaturesBlock;
 
 ### 2. Build the renderer
 
-`client/blocks/AcmeHero/AcmeHeroBlock.tsx`:
+`client/blocks/AcmeHero/AcmeHeroBlock.tsx` — compose from `lib/ui` primitives (no Tailwind, no shadcn):
 
 ```tsx
 import type { AcmeHeroBlock as AcmeHeroBlockType } from '@/client/types';
+import { Container, Stack, Heading, Text } from '@/lib/ui';
 
 export function AcmeHeroBlock({ block }: { block: AcmeHeroBlockType }) {
   return (
-    <section className="py-20 text-center">
-      <h1 className="text-5xl font-bold">{block.headline}</h1>
-      {block.subheadline && <p className="mt-4 text-lg">{block.subheadline}</p>}
-    </section>
+    <div style={{ paddingBlock: 'var(--space-20)' }}>
+      <Container width="wide">
+        <Stack gap={4} align="center">
+          <Heading level={1} size="hero" align="center">{block.headline}</Heading>
+          {block.subheadline && (
+            <Text size="xl" tone="muted" align="center">{block.subheadline}</Text>
+          )}
+        </Stack>
+      </Container>
+    </div>
   );
 }
 ```
 
+For block-specific layout that doesn't fit a primitive, add a co-located CSS Module (`AcmeHeroBlock.module.css`) and import it. Always use design tokens (CSS variables — see `AI_PLAYBOOK.md` §4) for colors, spacing, type — never hard-coded values.
+
 ### 3. Build the admin editor
 
-`client/blocks/AcmeHero/AcmeHeroEditor.tsx`:
+`client/blocks/AcmeHero/AcmeHeroEditor.tsx` — compose from form primitives:
 
 ```tsx
 import type { AcmeHeroBlock as AcmeHeroBlockType } from '@/client/types';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { Stack, TextField, TextAreaField } from '@/lib/ui';
 
 interface Props {
   block: AcmeHeroBlockType;
@@ -82,25 +90,24 @@ interface Props {
 
 export function AcmeHeroEditor({ block, onChange }: Props) {
   return (
-    <div className="space-y-3">
-      <div>
-        <Label>Headline</Label>
-        <Input
-          value={block.headline}
-          onChange={(e) => onChange({ ...block, headline: e.target.value })}
-        />
-      </div>
-      <div>
-        <Label>Subheadline</Label>
-        <Input
-          value={block.subheadline ?? ''}
-          onChange={(e) => onChange({ ...block, subheadline: e.target.value })}
-        />
-      </div>
-    </div>
+    <Stack gap={4}>
+      <TextField
+        label="Headline"
+        value={block.headline}
+        onChange={(headline) => onChange({ ...block, headline })}
+      />
+      <TextAreaField
+        label="Subheadline"
+        value={block.subheadline ?? ''}
+        rows={2}
+        onChange={(v) => onChange({ ...block, subheadline: v || undefined })}
+      />
+    </Stack>
   );
 }
 ```
+
+Available form primitives: `TextField`, `TextAreaField`, `NumberField`, `SelectField`, `ToggleField`, `ImageField`, `ArrayField` — all from `@/lib/ui`.
 
 ### 4. Define the gallery manifest
 

@@ -1,20 +1,23 @@
-import type { ButtonBlock as ButtonBlockType } from '@/lib/types';
-import { buttonVariants } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
+import { Container, Button } from '../../lib/ui';
+import type { ButtonBlock as ButtonBlockType } from '../../lib/types';
+import block from './Block.module.css';
 
-interface ButtonBlockProps {
-  block: ButtonBlockType;
-}
+const alignClass = {
+  left: block.alignLeft,
+  center: block.alignCenter,
+  right: block.alignRight,
+} as const;
 
-export function ButtonBlock({ block }: ButtonBlockProps) {
+export function ButtonBlock({ block: b }: { block: ButtonBlockType }) {
   return (
-    <div className="my-4">
-      <a
-        href={block.href}
-        className={cn(buttonVariants({ variant: block.variant ?? 'default' }))}
-      >
-        {block.text}
-      </a>
+    <div className={block['block-tight']}>
+      <Container width="default">
+        <div className={alignClass[b.align ?? 'left']}>
+          <Button variant={b.variant ?? 'primary'} size={b.size ?? 'md'} href={b.href}>
+            {b.label}
+          </Button>
+        </div>
+      </Container>
     </div>
   );
 }

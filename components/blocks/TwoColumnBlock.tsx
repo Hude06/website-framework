@@ -1,46 +1,36 @@
-import type { TwoColumnBlock as TwoColumnBlockType } from '@/lib/types';
-import { cn } from '@/lib/utils';
+/* eslint-disable @next/next/no-img-element */
+import { Container, Button } from '../../lib/ui';
+import type { TwoColumnBlock as TwoColumnBlockType, ColumnSide } from '../../lib/types';
+import block from './Block.module.css';
+import styles from './TwoColumnBlock.module.css';
 
-interface TwoColumnBlockProps {
-  block: TwoColumnBlockType;
-}
-
-type ColumnData = TwoColumnBlockType['left'];
-
-function Column({ data }: { data: ColumnData }) {
-  if (data.image) {
-    return (
-      <div className="overflow-hidden rounded-xl bg-muted">
-        <img
-          src={data.image}
-          alt={data.heading ?? ''}
-          className="h-full w-full object-cover"
-        />
-      </div>
-    );
-  }
+function Side({ side }: { side: ColumnSide }) {
   return (
-    <div className="space-y-4">
-      {data.heading && (
-        <h3 className="font-heading text-3xl leading-tight tracking-tight md:text-4xl">
-          {data.heading}
-        </h3>
+    <div className={styles.col}>
+      {side.image && <img src={side.image} alt={side.title ?? ''} className={styles.image} />}
+      {side.title && <h2 className={styles.title}>{side.title}</h2>}
+      {side.body && <p className={styles.body}>{side.body}</p>}
+      {side.button && (
+        <div className={styles.buttonRow}>
+          <Button variant={side.button.variant ?? 'primary'} href={side.button.href}>
+            {side.button.label}
+          </Button>
+        </div>
       )}
-      <p className="text-base leading-relaxed text-muted-foreground">{data.text}</p>
     </div>
   );
 }
 
-export function TwoColumnBlock({ block }: TwoColumnBlockProps) {
+export function TwoColumnBlock({ block: b }: { block: TwoColumnBlockType }) {
+  const ratioClass = `ratio-${b.ratio ?? '50-50'}` as const;
   return (
-    <section
-      className={cn(
-        'my-16 grid gap-10 lg:grid-cols-2 lg:items-center lg:gap-16',
-        block.reverse && 'lg:[&>*:first-child]:order-2',
-      )}
-    >
-      <Column data={block.left} />
-      <Column data={block.right} />
-    </section>
+    <div className={block.block}>
+      <Container width="wide">
+        <div className={`${styles.grid} ${styles[ratioClass]}`}>
+          <Side side={b.left} />
+          <Side side={b.right} />
+        </div>
+      </Container>
+    </div>
   );
 }

@@ -3,14 +3,30 @@
   "slug": "contact",
   "blocks": [
     {
-      "id": "contact-1",
+      "id": "contact-heading",
       "type": "heading",
-      "text": "Contact"
+      "text": "Get in touch",
+      "level": 1,
+      "size": "display",
+      "align": "center"
     },
     {
-      "id": "contact-2",
-      "type": "paragraph",
-      "text": "Starter contact page. Replace with a contact-form block or mailing address."
+      "id": "contact-intro",
+      "type": "text",
+      "body": "Send us a message. We read every one.",
+      "align": "center",
+      "tone": "muted",
+      "size": "lg"
+    },
+    {
+      "id": "contact-form",
+      "type": "form",
+      "submitLabel": "Send message",
+      "fields": [
+        { "name": "name", "label": "Name", "type": "text", "required": true },
+        { "name": "email", "label": "Email", "type": "email", "required": true },
+        { "name": "message", "label": "Message", "type": "textarea", "required": true }
+      ]
     }
   ]
 }

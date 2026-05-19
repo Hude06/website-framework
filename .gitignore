@@ -46,3 +46,8 @@ next-env.d.ts
 
 # client-site marker — only exists in client repos, never in the framework repo
 .client-site
+
+# Claude Code local settings (per-dev, not committed)
+.claude/settings.local.json
+# Claude Code transient worktrees (never committed)
+.claude/worktrees/

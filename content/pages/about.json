@@ -3,14 +3,30 @@
   "slug": "about",
   "blocks": [
     {
-      "id": "about-1",
+      "id": "about-heading",
       "type": "heading",
-      "text": "About"
+      "text": "About us",
+      "level": 1,
+      "size": "display"
     },
     {
-      "id": "about-2",
-      "type": "paragraph",
-      "text": "Starter about page. Replace this with client-specific content."
+      "id": "about-text",
+      "type": "text",
+      "body": "This is your About page. Replace this text with your own story.\n\nThe admin panel at /admin lets you edit any block here without touching code. Add new sections, reorder them, change the wording — it all saves back to this JSON file.",
+      "size": "lg"
+    },
+    {
+      "id": "about-two-col",
+      "type": "two-column",
+      "ratio": "50-50",
+      "left": {
+        "title": "What we do",
+        "body": "Describe what you do here. Two or three sentences. Make it specific. Avoid jargon."
+      },
+      "right": {
+        "title": "Why we do it",
+        "body": "Describe the motivation. The why is usually more interesting than the what."
+      }
     }
   ]
 }

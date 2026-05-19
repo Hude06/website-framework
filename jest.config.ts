@@ -14,8 +14,8 @@ const config: Config = {
     '\\.(css|less|scss)$': '<rootDir>/__tests__/__mocks__/styleMock.ts',
   },
   setupFilesAfterEnv: ['<rootDir>/__tests__/setup.ts'],
-  testPathIgnorePatterns: ['/node_modules/', '/.next/', '__mocks__', 'setup.ts'],
-  modulePathIgnorePatterns: ['<rootDir>/.next/'],
+  testPathIgnorePatterns: ['/node_modules/', '/.next/', '/.claude/', '__mocks__', 'setup.ts'],
+  modulePathIgnorePatterns: ['<rootDir>/.next/', '<rootDir>/.claude/'],
 };
 
 export default config;

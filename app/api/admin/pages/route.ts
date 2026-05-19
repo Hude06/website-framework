@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { listPages, loadPage } from '@/lib/content';
 import { writePage, validateSlug, generateBlockId } from '@/lib/admin';
-import type { ApiResponse, PageContent } from '@/lib/types';
+import type { ApiResponse, FrameworkBlock, PageContent } from '@/lib/types';
 
 export async function GET() {
   const pages = listPages();
@@ -43,14 +43,11 @@ export async function POST(request: Request) {
       );
     }
 
-    const page: PageContent = {
-      title,
-      slug,
-      blocks: [
-        { id: generateBlockId(slug, 0), type: 'heading', text: title },
-        { id: generateBlockId(slug, 1), type: 'paragraph', text: 'Start editing this page...' },
-      ],
-    };
+    const starterBlocks: FrameworkBlock[] = [
+      { id: generateBlockId(slug, 0), type: 'heading', text: title, level: 1, size: 'display' },
+      { id: generateBlockId(slug, 1), type: 'text', body: 'Start editing this page…' },
+    ];
+    const page: PageContent = { title, slug, blocks: starterBlocks };
 
     writePage(page);
 

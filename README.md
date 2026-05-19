@@ -1,6 +1,6 @@
 # Website Framework
 
-An open-source, AI-first website framework built on Next.js, React, Tailwind CSS, and shadcn/ui. Designed as a lightweight WordPress alternative for developers who build client websites with Claude.
+An open-source, AI-first website framework built on Next.js + React. Designed as a lightweight WordPress alternative for developers who build client websites with Claude.
 
 ## What This Is
 
@@ -9,95 +9,109 @@ A reusable framework for building static-ish client websites. You scaffold a new
 ## How It Works
 
 1. **Developer scaffolds a new site** from this framework
-2. **Developer customizes** the site with Claude (components, styling, content)
+2. **Developer customizes** the site with Claude (blocks, styling, content)
 3. **Developer deploys** to a Docker container on a Linode server behind Nginx
 4. **Client edits content** through an admin panel at `/admin` (text, images, pages, navigation)
 5. **Changes auto-sync** to GitHub via git commit + push
 
 ## Key Features
 
-- **Block-based content** — pages are JSON files with typed blocks (heading, paragraph, image, badges, card grid, button, separator)
-- **Admin panel** at `/admin` — page editor, block gallery, nav editor, image upload, live preview
-- **BlockRenderer contract** — admin panel edits data, template renders it. Works with any CSS framework.
-- **shadcn/ui components** — Button, Card, Badge, Separator, Dialog, Input, etc.
+- **Block-based content** — pages are JSON files with 10 typed base blocks (heading, text, image, button, hero, section, grid, two-column, quote, form)
+- **Admin panel** at `/admin` — page editor, block gallery, nav editor, image upload, live preview iframe
+- **BlockRenderer contract** — admin panel edits JSON data, blocks render it. Generic over the registry.
+- **No CSS framework** — small set of hand-rolled primitives + CSS Modules + design tokens. No Tailwind, no shadcn.
+- **5 theme presets** — editorial / studio / tech / warm / monochrome. Themes are CSS variable bundles applied via `[data-theme]`.
 - **No database** — everything is JSON files in `/content/`
-- **No auth code** — Nginx basic auth protects `/admin` on the server
-- **Git-backed** — all content changes are committed and pushed to GitHub
+- **No auth code in the app** — Nginx basic auth protects `/admin` on the server
+- **Git-backed** — content changes commit and push automatically
 
 ## Quick Start
 
 ```bash
-# Install dependencies
 npm install
-
-# Run locally
-npm run dev
-
-# Build
-npm run build
-
-# Run tests
-npm test
+npm run dev          # http://localhost:3000
+npm run build        # production build
+npm test             # jest + testing-library
+npm run lint
 ```
 
-Visit `http://localhost:3000` for the site, `http://localhost:3000/admin` for the admin panel.
+Visit:
+- `http://localhost:3000` — the site
+- `http://localhost:3000/admin` — admin panel (block editor + preview)
+- `http://localhost:3000/ui-preview` — primitive showcase with theme switcher
 
 ## Project Structure
 
 ```
 app/
-  (site)/              Site pages (with Header + Footer)
-    page.tsx           Home page — loads content/pages/home.json
+  (site)/              Public site (with Header + Footer)
+    page.tsx           Home — loads content/pages/home.json
     [slug]/page.tsx    Dynamic pages — loads content/pages/{slug}.json
+    not-found.tsx      404
   admin/               Admin panel (no site chrome)
-    page.tsx           Page editor, block gallery, nav editor
+    page.tsx           Page editor, block gallery, nav editor, settings, iframe preview
   api/admin/           API routes for content CRUD
     pages/             List, create, read, update, delete pages
     site/              Read and update site config (nav, colors, fonts)
     upload/            Image upload
     rebuild/           Trigger npm run build + git commit/push
+  ui-preview/          Primitive showcase + theme switcher (dev tool)
+  layout.tsx           Root layout — loads fonts, sets theme attributes
+  globals.css          Design tokens + 5 theme presets
 
 components/
-  blocks/              Block components (HeadingBlock, ParagraphBlock, etc.)
-  admin/               Admin panel components (BlockEditor, NavEditor, etc.)
-  ui/                  shadcn/ui components
-  BlockRenderer.tsx    Maps block types to components — the core contract
+  blocks/              The 10 base block render components
+  admin/               Admin chrome (BlockEditor, BlockGallery, PageSidebar, etc.)
+  admin/editors/       Per-block admin editors
+  admin/manifests.ts   Block templates for the gallery (defaults + labels)
+  BlockRenderer.tsx    Maps block.type → component, merges client + framework registry
   Header.tsx           Site header with nav links from site.json
   Footer.tsx           Site footer
 
-content/
-  pages/*.json         Page content files
-  uploads/             Client-uploaded images
-  site.json            Site config (name, nav links, fonts, colors)
-
 lib/
+  ui/                  12 primitives: Container, Stack, Heading, Text, Button,
+                       TextField, TextAreaField, NumberField, SelectField,
+                       ToggleField, ImageField, ArrayField (all CSS Modules)
   content.ts           loadPage(), loadSiteConfig(), listPages()
   admin.ts             Server-side helpers (write, delete, validate, git, rebuild)
-  admin-api.ts         Client-side API wrappers
-  types.ts             TypeScript types for blocks, pages, config
+  admin-api.ts         Client-side fetch wrappers
+  types.ts             TypeScript types for the 10 base blocks + page + site config
+  schemas.ts           Zod schemas (validate on save)
+  themes.ts            Theme preset loader
+  motion.tsx           Reveal / Stagger / Parallax primitives (Framer Motion)
+
+content/
+  pages/*.json         Page content files (home, about, contact)
+  themes/*.json        5 theme presets
+  uploads/             Client-uploaded images
+  site.json            Site config (name, nav links, fonts, theme)
+
+client/
+  blocks/              Client-specific custom blocks (empty by default)
+  registry.ts          Client block render components map
+  editor-registry.ts   Client block admin editors map
+  gallery.ts           Client block gallery entries
+  types.ts             Client block TypeScript union
+  theme.ts             Client theme presets map
+  README.md            Client zone docs
 ```
 
-## Block Types
+## The 10 Base Blocks
 
-| Type | Description | Editable Fields |
-|------|-------------|-----------------|
-| `heading` | Section title | text, level (h1-h6) |
-| `paragraph` | Text content | text |
-| `image` | Image with alt text | src, alt, upload |
-| `badge-group` | Group of tags/labels | badge labels |
-| `card-grid` | Grid of cards | title, description, link per card |
-| `button` | CTA link | text, href, variant |
-| `separator` | Horizontal divider | — |
+| Type | Description | Key fields |
+|------|-------------|-----------|
+| `heading` | A standalone heading | text, level (1-6), size, tone, align |
+| `text` | Body paragraphs (split on blank lines) | body, size, tone, weight, align |
+| `image` | Image with optional caption | src, alt, caption, width |
+| `button` | Call-to-action link | label, href, variant, size, align |
+| `hero` | Title + subtitle + buttons + optional image | title, subtitle, buttons[], image, align |
+| `section` | Visual band with heading + body | heading, body, background, padding, anchor |
+| `grid` | N-column grid of items | heading, items[{title, body, image}], columns |
+| `two-column` | Side-by-side layout | left/right: {title, body, image, button}, ratio |
+| `quote` | Pull quote with author + role | quote, author, role, image |
+| `form` | Contact form with configurable fields | heading, fields[{name, label, type, required}], submitLabel, action |
 
-## Adding a New Block Type
-
-1. Add the type interface to `lib/types.ts`
-2. Add it to the `Block` union type
-3. Create a component in `components/blocks/`
-4. Register it in `components/BlockRenderer.tsx`
-5. Create an editor in `components/admin/editors/`
-6. Register it in `components/admin/BlockEditor.tsx`
-7. Add it to `components/admin/BlockGallery.tsx`
+Need something more specific (FAQ, pricing, team grid)? Build a **custom block** in `client/blocks/` — it merges into the gallery automatically without touching framework code. See `client/README.md`.
 
 ## Content File Format
 
@@ -106,33 +120,47 @@ lib/
   "title": "About",
   "slug": "about",
   "blocks": [
-    { "id": "about-1", "type": "heading", "text": "About Me" },
-    { "id": "about-2", "type": "paragraph", "text": "I design things..." },
-    { "id": "about-3", "type": "image", "src": "/uploads/photo.jpg", "alt": "Photo" }
+    { "id": "about-h1", "type": "heading", "text": "About us", "level": 1, "size": "display" },
+    { "id": "about-body", "type": "text", "body": "We do things.\n\nAnd we do them well." }
   ]
 }
 ```
+
+## Adding a New Block Type
+
+**Framework block** (ships to all clients — edit this repo):
+1. Add the interface to `lib/types.ts`, add to `FrameworkBlock` union
+2. Add the zod schema to `lib/schemas.ts`
+3. Create the render component in `components/blocks/<Name>Block.tsx`
+4. Register in `components/BlockRenderer.tsx`
+5. Create the editor in `components/admin/editors/<Name>Editor.tsx`
+6. Register in `components/admin/editors/index.ts`
+7. Add the manifest to `components/admin/manifests.ts`
+
+**Client block** (lives in one site only — edit `client/` in that site): see `client/README.md`.
 
 ## Deployment
 
 Sites deploy as Docker containers on a Linode server behind Nginx with SSL via Certbot.
 
-- `/admin` and `/api/admin` are protected by Nginx basic auth
+- `/admin` and `/api/admin` are protected by Nginx basic auth (no app-level auth code)
 - Docker container runs Next.js in standalone mode
-- Git deploy key (push-only, single repo) for auto-sync
+- Git deploy key (push-only, single repo) for content sync
 
-See [ARCHITECTURE.md](ARCHITECTURE.md) for full deployment flow diagrams.
+See `ARCHITECTURE.md` for full deployment flow diagrams.
 
 ## Tech Stack
 
 - **Next.js 16** — App Router, standalone output
 - **React 19** — server and client components
-- **Tailwind CSS v4** — utility-first styling
-- **shadcn/ui** — component library (base-ui primitives)
+- **Motion** — animation primitives (Reveal / Stagger / Parallax)
+- **Lucide** — icon library (optional, on demand)
+- **Zod** — schema validation for admin saves
 - **TypeScript** — strict mode
 - **Jest + Testing Library** — unit and component tests
-- **Docker** — containerized deployment
-- **Nginx** — reverse proxy, SSL, basic auth
+- **Docker + Nginx** — containerized deployment with SSL
+
+No CSS framework, no component library — UI is hand-rolled primitives + CSS Modules + CSS variables.
 
 ## License
 

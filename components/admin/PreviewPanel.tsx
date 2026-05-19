@@ -1,5 +1,7 @@
 'use client';
 
+import styles from './PreviewPanel.module.css';
+
 interface PreviewPanelProps {
   slug: string | null;
   refreshKey: number;
@@ -8,8 +10,8 @@ interface PreviewPanelProps {
 export function PreviewPanel({ slug, refreshKey }: PreviewPanelProps) {
   if (!slug) {
     return (
-      <div className="flex-1 flex items-center justify-center text-muted-foreground">
-        Select a page to preview
+      <div className={styles.preview}>
+        <div className={styles.empty}>Select a page to preview</div>
       </div>
     );
   }
@@ -17,11 +19,11 @@ export function PreviewPanel({ slug, refreshKey }: PreviewPanelProps) {
   const src = slug === 'home' ? '/' : `/${slug}`;
 
   return (
-    <div className="flex-1 min-w-0">
+    <div className={styles.preview}>
       <iframe
         key={`${slug}-${refreshKey}`}
         src={src}
-        className="w-full h-full border-0"
+        className={styles.frame}
         title="Page preview"
       />
     </div>

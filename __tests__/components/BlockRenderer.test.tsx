@@ -1,6 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import { BlockRenderer } from '@/components/BlockRenderer';
-import type { Block } from '@/lib/types';
+import type { FrameworkBlock } from '@/lib/types';
+type Block = FrameworkBlock;
 
 describe('BlockRenderer', () => {
   it('renders a heading block', () => {
@@ -8,15 +9,16 @@ describe('BlockRenderer', () => {
       { id: 'h1', type: 'heading', text: 'Test Heading' },
     ];
     render(<BlockRenderer blocks={blocks} />);
-    expect(screen.getByRole('heading')).toHaveTextContent('Test Heading');
+    expect(screen.getByRole('heading', { name: 'Test Heading' })).toBeInTheDocument();
   });
 
-  it('renders a paragraph block', () => {
+  it('renders a text block, splitting paragraphs on blank lines', () => {
     const blocks: Block[] = [
-      { id: 'p1', type: 'paragraph', text: 'Test paragraph.' },
+      { id: 't1', type: 'text', body: 'First paragraph.\n\nSecond paragraph.' },
     ];
     render(<BlockRenderer blocks={blocks} />);
-    expect(screen.getByText('Test paragraph.')).toBeInTheDocument();
+    expect(screen.getByText('First paragraph.')).toBeInTheDocument();
+    expect(screen.getByText('Second paragraph.')).toBeInTheDocument();
   });
 
   it('renders an image block', () => {
@@ -24,30 +26,27 @@ describe('BlockRenderer', () => {
       { id: 'img1', type: 'image', src: '/test.jpg', alt: 'Test' },
     ];
     render(<BlockRenderer blocks={blocks} />);
-    expect(screen.getByRole('img')).toHaveAttribute('src', '/test.jpg');
+    expect(screen.getByRole('img', { name: 'Test' })).toHaveAttribute('src', '/test.jpg');
   });
 
-  it('renders multiple blocks in order', () => {
+  it('renders a button block as a link when href is set', () => {
     const blocks: Block[] = [
-      { id: 'h1', type: 'heading', text: 'First' },
-      { id: 'p1', type: 'paragraph', text: 'Second' },
-      { id: 'p2', type: 'paragraph', text: 'Third' },
+      { id: 'b1', type: 'button', label: 'Click me', href: '/somewhere' },
     ];
-    const { container } = render(<BlockRenderer blocks={blocks} />);
-    const children = container.firstElementChild?.children;
-    expect(children).toHaveLength(3);
+    render(<BlockRenderer blocks={blocks} />);
+    expect(screen.getByRole('link', { name: 'Click me' })).toHaveAttribute('href', '/somewhere');
   });
 
-  it('skips unknown block types', () => {
+  it('skips unknown block types without crashing', () => {
     const blocks = [
       { id: 'u1', type: 'unknown', text: 'Nope' },
     ] as unknown as Block[];
     const { container } = render(<BlockRenderer blocks={blocks} />);
-    expect(container.firstElementChild?.children).toHaveLength(0);
+    expect(container).toBeEmptyDOMElement();
   });
 
   it('renders empty for no blocks', () => {
     const { container } = render(<BlockRenderer blocks={[]} />);
-    expect(container.firstElementChild?.children).toHaveLength(0);
+    expect(container).toBeEmptyDOMElement();
   });
 });

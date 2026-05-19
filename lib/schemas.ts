@@ -19,6 +19,7 @@ const imageSrc = z
   .string()
   .max(2048)
   .refine((s) => {
+    if (s === '') return true;
     if (s.startsWith('/') && !s.startsWith('//')) return true;
     try {
       const u = new URL(s);
@@ -33,271 +34,166 @@ const mediumText = z.string().max(2000);
 const longText = z.string().max(20000);
 const hexColor = z.string().regex(/^#([0-9a-fA-F]{3,8})$/, 'Must be a hex color');
 const fontFamily = z.string().max(200);
-
-const cta = z.object({
-  text: shortText,
-  href: safeUrl,
-});
-
 const id = z.string().min(1).max(200);
 
+const headingLevel = z.union([z.literal(1), z.literal(2), z.literal(3), z.literal(4), z.literal(5), z.literal(6)]);
+const headingSize = z.enum(['sm', 'md', 'lg', 'xl', 'display', 'hero']);
+const textSize = z.enum(['xs', 'sm', 'base', 'lg', 'xl']);
+const tone = z.enum(['default', 'muted', 'accent']);
+const weight = z.enum(['regular', 'medium', 'semibold', 'bold']);
+const align = z.enum(['left', 'center', 'right']);
+const buttonVariant = z.enum(['primary', 'secondary', 'ghost', 'accent', 'destructive']);
+const buttonSize = z.enum(['sm', 'md', 'lg']);
+const imageWidth = z.enum(['narrow', 'default', 'wide', 'full']);
+const sectionBackground = z.enum(['default', 'muted', 'card', 'accent']);
+const sectionPadding = z.enum(['sm', 'md', 'lg', 'xl']);
+const gridColumns = z.union([z.literal(2), z.literal(3), z.literal(4)]);
+const columnRatio = z.enum(['50-50', '60-40', '40-60']);
+const formFieldType = z.enum(['text', 'textarea', 'email']);
+
+const ctaLink = z.object({
+  label: shortText,
+  href: safeUrl,
+  variant: buttonVariant.optional(),
+});
+
+const gridItem = z.object({
+  title: shortText,
+  body: mediumText.optional(),
+  image: imageSrc.optional(),
+});
+
+const columnSide = z.object({
+  title: shortText.optional(),
+  body: mediumText.optional(),
+  image: imageSrc.optional(),
+  button: ctaLink.optional(),
+});
+
+const formField = z.object({
+  name: z.string().min(1).max(100).regex(/^[a-zA-Z_][a-zA-Z0-9_-]*$/, 'Invalid field name'),
+  label: shortText,
+  type: formFieldType,
+  required: z.boolean().optional(),
+  placeholder: shortText.optional(),
+});
+
+/* ============================================================
+   Block schemas — the 10 base blocks
+   ============================================================ */
 const HeadingBlockSchema = z.object({
   id, type: z.literal('heading'),
   text: shortText,
-  level: z.union([z.literal(1), z.literal(2), z.literal(3), z.literal(4), z.literal(5), z.literal(6)]).optional(),
+  level: headingLevel.optional(),
+  size: headingSize.optional(),
+  tone: tone.optional(),
+  align: align.optional(),
 });
 
-const ParagraphBlockSchema = z.object({
-  id, type: z.literal('paragraph'),
-  text: longText,
+const TextBlockSchema = z.object({
+  id, type: z.literal('text'),
+  body: longText,
+  size: textSize.optional(),
+  tone: tone.optional(),
+  weight: weight.optional(),
+  align: align.optional(),
 });
 
 const ImageBlockSchema = z.object({
   id, type: z.literal('image'),
   src: imageSrc,
   alt: shortText,
-});
-
-const BadgeGroupBlockSchema = z.object({
-  id, type: z.literal('badge-group'),
-  badges: z.array(shortText).max(50),
-});
-
-const CardBlockSchema = z.object({
-  id, type: z.literal('card'),
-  title: shortText,
-  description: mediumText,
-  image: imageSrc.optional(),
-  link: safeUrl.optional(),
-});
-
-const CardGridBlockSchema = z.object({
-  id, type: z.literal('card-grid'),
-  cards: z.array(z.object({
-    title: shortText,
-    description: mediumText,
-    image: imageSrc.optional(),
-    link: safeUrl.optional(),
-  })).max(100),
+  caption: shortText.optional(),
+  width: imageWidth.optional(),
 });
 
 const ButtonBlockSchema = z.object({
   id, type: z.literal('button'),
-  text: shortText,
+  label: shortText,
   href: safeUrl,
-  variant: z.enum(['default', 'secondary', 'outline', 'ghost']).optional(),
+  variant: buttonVariant.optional(),
+  size: buttonSize.optional(),
+  align: align.optional(),
 });
-
-const SeparatorBlockSchema = z.object({ id, type: z.literal('separator') });
 
 const HeroBlockSchema = z.object({
   id, type: z.literal('hero'),
-  eyebrow: shortText.optional(),
-  headline: shortText,
-  subheadline: mediumText.optional(),
-  primaryCta: cta.optional(),
-  secondaryCta: cta.optional(),
-  image: imageSrc.optional(),
-  align: z.enum(['left', 'center']).optional(),
-});
-
-const FeatureGridBlockSchema = z.object({
-  id, type: z.literal('feature-grid'),
-  eyebrow: shortText.optional(),
-  heading: shortText.optional(),
-  items: z.array(z.object({
-    icon: shortText.optional(),
-    title: shortText,
-    description: mediumText,
-  })).max(50),
-  columns: z.union([z.literal(2), z.literal(3), z.literal(4)]).optional(),
-});
-
-const CtaBlockSchema = z.object({
-  id, type: z.literal('cta'),
-  eyebrow: shortText.optional(),
   title: shortText,
-  description: mediumText.optional(),
-  primaryCta: cta.optional(),
-  secondaryCta: cta.optional(),
-  tone: z.enum(['default', 'bold', 'quiet']).optional(),
+  subtitle: mediumText.optional(),
+  buttons: z.array(ctaLink).max(4).optional(),
+  image: imageSrc.optional(),
+  align: align.optional(),
 });
 
-const FaqBlockSchema = z.object({
-  id, type: z.literal('faq'),
-  eyebrow: shortText.optional(),
+const SectionBlockSchema = z.object({
+  id, type: z.literal('section'),
   heading: shortText.optional(),
-  items: z.array(z.object({ question: shortText, answer: longText })).max(100),
+  body: mediumText.optional(),
+  background: sectionBackground.optional(),
+  padding: sectionPadding.optional(),
+  anchor: z.string().max(100).optional(),
 });
 
-const StatsBlockSchema = z.object({
-  id, type: z.literal('stats'),
-  eyebrow: shortText.optional(),
+const GridBlockSchema = z.object({
+  id, type: z.literal('grid'),
   heading: shortText.optional(),
-  items: z.array(z.object({
-    value: shortText,
-    label: shortText,
-    caption: shortText.optional(),
-  })).max(50),
-});
-
-const PricingBlockSchema = z.object({
-  id, type: z.literal('pricing'),
-  eyebrow: shortText.optional(),
-  heading: shortText.optional(),
-  tiers: z.array(z.object({
-    name: shortText,
-    price: shortText,
-    period: shortText.optional(),
-    description: mediumText.optional(),
-    features: z.array(shortText).max(50),
-    ctaText: shortText,
-    ctaHref: safeUrl,
-    featured: z.boolean().optional(),
-  })).max(20),
-});
-
-const StepsBlockSchema = z.object({
-  id, type: z.literal('steps'),
-  eyebrow: shortText.optional(),
-  heading: shortText.optional(),
-  steps: z.array(z.object({ title: shortText, description: mediumText })).max(50),
-});
-
-const TeamBlockSchema = z.object({
-  id, type: z.literal('team'),
-  eyebrow: shortText.optional(),
-  heading: shortText.optional(),
-  members: z.array(z.object({
-    name: shortText,
-    role: shortText,
-    bio: mediumText.optional(),
-    image: imageSrc.optional(),
-    link: safeUrl.optional(),
-  })).max(100),
-});
-
-const RichTextBlockSchema = z.object({
-  id, type: z.literal('rich-text'),
-  content: longText,
-});
-
-const VideoBlockSchema = z.object({
-  id, type: z.literal('video'),
-  src: imageSrc,
-  title: shortText.optional(),
-  provider: z.enum(['youtube', 'vimeo', 'file']).optional(),
-  aspectRatio: z.enum(['16:9', '4:3', '1:1', '21:9']).optional(),
-});
-
-const ContactFormBlockSchema = z.object({
-  id, type: z.literal('contact-form'),
-  eyebrow: shortText.optional(),
-  heading: shortText.optional(),
-  description: mediumText.optional(),
-  submitLabel: shortText.optional(),
-  action: safeUrl.optional(),
-  fields: z.array(z.enum(['name', 'email', 'subject', 'message'])).optional(),
+  items: z.array(gridItem).max(20),
+  columns: gridColumns.optional(),
 });
 
 const TwoColumnBlockSchema = z.object({
   id, type: z.literal('two-column'),
-  left: z.object({ heading: shortText.optional(), text: mediumText, image: imageSrc.optional() }),
-  right: z.object({ heading: shortText.optional(), text: mediumText, image: imageSrc.optional() }),
-  reverse: z.boolean().optional(),
+  left: columnSide,
+  right: columnSide,
+  ratio: columnRatio.optional(),
 });
 
 const QuoteBlockSchema = z.object({
   id, type: z.literal('quote'),
   quote: mediumText,
-  author: shortText,
+  author: shortText.optional(),
   role: shortText.optional(),
-  avatar: imageSrc.optional(),
+  image: imageSrc.optional(),
 });
 
-const AnnotationSchema = z.object({
-  id,
-  text: shortText,
-  x: z.number(),
-  y: z.number(),
-  variant: z.enum(['note', 'chip', 'callout', 'popover', 'tag']).optional(),
-  emoji: shortText.optional(),
-  rotate: z.number().optional(),
-  delay: z.number().optional(),
-  arrow: z.object({
-    targetX: z.number(),
-    targetY: z.number(),
-    curvature: z.number().optional(),
-  }).optional(),
+const FormBlockSchema = z.object({
+  id, type: z.literal('form'),
+  heading: shortText.optional(),
+  fields: z.array(formField).max(20),
+  submitLabel: shortText.optional(),
+  action: safeUrl.optional(),
 });
 
-const AnnotatedHeroBlockSchema = z.object({
-  id, type: z.literal('annotated-hero'),
-  eyebrow: shortText.optional(),
-  headline: shortText,
-  subheadline: mediumText.optional(),
-  caption: mediumText.optional(),
-  primaryCta: cta.optional(),
-  secondaryCta: cta.optional(),
-  image: imageSrc,
-  imageAlt: shortText.optional(),
-  imagePosition: z.enum(['left', 'right']).optional(),
-  imageAspect: z.enum(['landscape', 'square', 'portrait']).optional(),
-  annotations: z.array(AnnotationSchema).max(100).optional(),
-  align: z.enum(['left', 'center']).optional(),
-});
-
-const LeafBlockSchema = z.discriminatedUnion('type', [
+const FrameworkBlockSchema = z.discriminatedUnion('type', [
   HeadingBlockSchema,
-  ParagraphBlockSchema,
+  TextBlockSchema,
   ImageBlockSchema,
-  BadgeGroupBlockSchema,
-  CardBlockSchema,
-  CardGridBlockSchema,
   ButtonBlockSchema,
-  SeparatorBlockSchema,
   HeroBlockSchema,
-  AnnotatedHeroBlockSchema,
-  FeatureGridBlockSchema,
-  CtaBlockSchema,
-  FaqBlockSchema,
-  StatsBlockSchema,
-  PricingBlockSchema,
-  StepsBlockSchema,
-  TeamBlockSchema,
-  RichTextBlockSchema,
-  VideoBlockSchema,
-  ContactFormBlockSchema,
+  SectionBlockSchema,
+  GridBlockSchema,
   TwoColumnBlockSchema,
   QuoteBlockSchema,
+  FormBlockSchema,
 ]);
 
-const SectionBlockSchema = z.object({
-  id, type: z.literal('section'),
-  background: z.enum(['default', 'muted', 'foreground', 'accent', 'card']).optional(),
-  width: z.enum(['narrow', 'standard', 'wide', 'full']).optional(),
-  padding: z.enum(['none', 'sm', 'md', 'lg', 'xl']).optional(),
-  reveal: z.boolean().optional(),
-  blocks: z.array(LeafBlockSchema).max(200),
-});
-
-export const BlockSchema = z.union([LeafBlockSchema, SectionBlockSchema]);
+const ClientBlockSchema = z.object({ id, type: z.string() }).passthrough();
+const BlockSchema = z.union([FrameworkBlockSchema, ClientBlockSchema]);
 
 export const PageContentSchema = z.object({
-  title: z.string().min(1).max(300),
-  slug: z.string().regex(/^[a-z0-9-]+$/).min(1).max(100),
-  blocks: z.array(BlockSchema).max(500),
+  title: shortText,
+  slug: z.string().regex(/^[a-z0-9-]+$/, 'Slug must be lowercase letters, numbers, and dashes only').max(100),
+  description: mediumText.optional(),
+  blocks: z.array(BlockSchema).max(200),
 });
 
-const navLinkSchema = z.object({ label: shortText.min(1), href: safeUrl });
-
 export const SiteConfigSchema = z.object({
-  siteName: z.string().min(1).max(200),
-  nav: z.array(navLinkSchema).max(50),
+  siteName: shortText,
+  nav: z.array(z.object({ label: shortText, href: safeUrl })).max(20),
   fonts: z.object({
     heading: fontFamily,
     body: fontFamily,
-    pair: z.string().max(100).optional(),
+    pair: z.enum(['editorial', 'studio', 'tech', 'warm', 'monochrome']).optional(),
   }),
   colors: z.object({
     primary: hexColor,
@@ -306,11 +202,20 @@ export const SiteConfigSchema = z.object({
     text: hexColor,
   }),
   theme: z.object({
-    preset: z.string().max(100).optional(),
+    preset: z.enum(['editorial', 'studio', 'tech', 'warm', 'monochrome']).optional(),
     appearance: z.enum(['light', 'dark', 'auto']).optional(),
     accent: hexColor.optional(),
   }).optional(),
   motion: z.object({
     intensity: z.enum(['none', 'subtle', 'rich']).optional(),
   }).optional(),
+  contact: z.object({
+    email: z.string().email().max(200).optional(),
+  }).optional(),
+  plausible: z.object({
+    domain: z.string().max(200).optional(),
+  }).optional(),
 });
+
+export type PageContentInput = z.infer<typeof PageContentSchema>;
+export type SiteConfigInput = z.infer<typeof SiteConfigSchema>;

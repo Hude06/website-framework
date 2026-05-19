@@ -7,26 +7,32 @@ This is a reusable website framework. Sites built from this framework share the 
 ## Architecture
 
 - Pages are JSON files in `/content/pages/` rendered by `BlockRenderer`
-- Site config (nav, fonts, colors) is in `/content/site.json`
+- Site config (nav, fonts, colors, theme) is in `/content/site.json`
 - Admin panel at `/admin` lets clients edit content without code access
 - See `ARCHITECTURE.md` for full system diagrams and deployment flows
 
 ## AI Playbook — READ BEFORE WRITING BLOCK JSON
 
-Before adding, composing, or editing any block JSON, read `AI_PLAYBOOK.md` at the repo root. It's the menu of every block type (21 total), theme preset (5 distinct aesthetic POVs), motion primitive (`<Reveal>`, `<Stagger>`, `<Parallax>`), font pair, section composition rule, and placeholder asset available in this framework. Contains two complete recipe examples (dark editorial, neo-brutalist agency) and a do/don't list.
+Before adding, composing, or editing any block JSON, read `AI_PLAYBOOK.md` at the repo root. It's the menu of every block type (10 base blocks), theme preset (5 distinct aesthetic POVs), motion primitive (`<Reveal>`, `<Stagger>`, `<Parallax>`), and section composition rule available in this framework.
 
-## Design Toolkit Reference — READ BEFORE BUILDING VISUALS
+## UI Primitives — READ BEFORE BUILDING CUSTOM COMPONENTS
 
-Before scaffolding a new site, adding a visual element, or picking fonts/icons/animation, read `DESIGN_TOOLKITS.md`. It contains the opinionated ranked list of free UI toolkits, component libraries, icons, fonts, and animation libraries — organized by website type (portfolio, SaaS, blog, landing page, etc.).
+The framework has NO CSS framework. UI is built from 12 hand-rolled primitives in `lib/ui/` + CSS Modules + CSS variables (design tokens defined in `app/globals.css`).
 
-Default stack for this framework: **Next.js + Tailwind v4 + shadcn/ui + Lucide icons + Motion**, with Instrument Serif + Inter as default fonts. `DESIGN_TOOLKITS.md` tells you when to layer on extensions (Aceternity, Tremor, GSAP) and when to break glass and use a different stack entirely (Nextra for docs, Astro for content-heavy, etc.).
+**Display primitives**: `<Container>`, `<Stack>`, `<Heading>`, `<Text>`, `<Button>`
+**Form primitives** (used by admin editors): `<TextField>`, `<TextAreaField>`, `<NumberField>`, `<SelectField>`, `<ToggleField>`, `<ImageField>` (with upload), `<ArrayField>` (with reorder)
 
-Never hand-roll custom JSX in `app/(site)/` pages — always go through the block system. If the primitives don't cover what you need, add a new block type (see "Adding a Block Type" below) rather than writing one-off JSX.
+All primitives consume theme tokens via CSS variables — they re-style automatically when the active theme changes. See `/ui-preview` route at runtime to see them across all 5 themes.
+
+**Do not introduce Tailwind, shadcn, or any other CSS framework.** The framework was specifically rebuilt off them to keep the surface small and AI-tailorable per client.
+
+Never hand-roll custom JSX in `app/(site)/` pages — always go through the block system. If the primitives don't cover what you need, add a new block type (see below) rather than writing one-off JSX.
 
 ## Content System
 
 - `lib/content.ts` — `loadPage(slug)`, `loadSiteConfig()`, `listPages()`
 - `lib/types.ts` — all block types, `PageContent`, `SiteConfig`, `ApiResponse`
+- `lib/schemas.ts` — zod schemas; the admin API validates against these before saving
 - `components/BlockRenderer.tsx` — maps `block.type` to components via registry pattern
 - Content is never in components. Components read from JSON. Admin writes JSON.
 
@@ -36,12 +42,13 @@ There are two paths depending on whether the block belongs in the framework or i
 
 ### Framework block (ships to all clients, requires editing the framework repo)
 
-1. Add interface to `lib/types.ts`, add to `FrameworkBlock` union
-2. Create component in `components/blocks/`
-3. Register in `BlockRenderer.tsx` (`frameworkBlocks` object)
-4. Create editor in `components/admin/editors/`
-5. Register in `components/admin/BlockEditor.tsx` (`frameworkEditors` + `frameworkTypeLabels`)
-6. Add to `components/admin/BlockGallery.tsx` (`blockTemplates` array)
+1. Add the interface to `lib/types.ts`, add to `FrameworkBlock` union
+2. Add the zod schema to `lib/schemas.ts`, add it to `FrameworkBlockSchema`
+3. Create the render component in `components/blocks/<Name>Block.tsx` (+ optional `.module.css`)
+4. Register in `components/BlockRenderer.tsx` (`frameworkBlocks` object)
+5. Create editor in `components/admin/editors/<Name>Editor.tsx`
+6. Register in `components/admin/editors/index.ts` (`frameworkEditors`)
+7. Add manifest (defaults + label) to `components/admin/manifests.ts`
 
 ### Client block (lives only in a specific client site, goes in `client/`)
 
@@ -49,7 +56,7 @@ See `client/README.md` for the complete walkthrough. Summary: create `client/blo
 
 ## Admin Panel
 
-- `/admin` — client-facing page editor
+- `/admin` — three-pane page editor (page list | block editor | iframe preview)
 - `/api/admin/pages` — CRUD for pages
 - `/api/admin/site` — read/update site config
 - `/api/admin/upload` — image upload to `/public/uploads/`
@@ -66,32 +73,35 @@ See `client/README.md` for the complete walkthrough. Summary: create `client/blo
 
 These changes are safe and will not break the admin panel:
 
-- **Component styling** — Tailwind classes, shadcn theme, CSS. The admin panel never touches rendering.
-- **Component structure** — how HeadingBlock renders its text, how CardGridBlock lays out cards, etc. As long as the component still reads `block.text`, `block.src`, etc., it's fine.
-- **Layout and site chrome** — Header, Footer, root layout, fonts, colors. All driven by `content/site.json`.
+- **Component styling** — CSS Module rules, CSS variable tokens, theme JSON. The admin panel never touches rendering.
+- **Component structure** — how HeadingBlock renders its text, how GridBlock lays out items, etc. As long as the component still reads `block.text`, `block.src`, etc., it's fine.
+- **Layout and site chrome** — Header, Footer, root layout, fonts. All driven by `content/site.json`.
 - **Add new pages** — through the admin panel or manually via `content/pages/*.json`.
 - **Add new fields to existing blocks** as optional — e.g., add an optional `align?: 'left' | 'center'` to HeadingBlock. Old content files still work. Admin editor can be updated to expose the new field.
-- **Add new CSS frameworks or component libraries** — swap Tailwind for Bootstrap if you want. The admin panel doesn't know.
 - **Customize the starter content** — overwrite home.json, about.json, contact.json with client-specific content.
 - **Modify API route implementations** — as long as the response shape (`ApiResponse<T>`) stays the same.
 - **Add new API routes** — for custom functionality like contact forms, analytics, etc.
+- **Add new theme presets** — add a JSON file to `content/themes/` and a matching `[data-theme="..."]` block to `app/globals.css`.
 
 ## Breaks Admin Panel (Handle With Care)
 
 These changes WILL break the admin panel unless you update multiple files in sync:
 
 - **Renaming a block type** — e.g., `heading` → `title`. You MUST update:
-  1. `lib/types.ts` — the type name
-  2. `components/BlockRenderer.tsx` — the registry key
-  3. `components/admin/BlockEditor.tsx` — the switch case and typeLabels
-  4. `components/admin/BlockGallery.tsx` — the template
-  5. All existing `content/pages/*.json` files that use the old name — migrate them
+  1. `lib/types.ts` — the type name + union
+  2. `lib/schemas.ts` — the zod literal + discriminated union
+  3. `components/BlockRenderer.tsx` — the registry key
+  4. `components/admin/editors/index.ts` — the registry key
+  5. `components/admin/manifests.ts` — the manifest type field
+  6. All existing `content/pages/*.json` files that use the old name — migrate them
 
 - **Changing field names on a block** — e.g., HeadingBlock `text` → `content`. You MUST update:
   1. `lib/types.ts` — the interface
-  2. `components/blocks/HeadingBlock.tsx` — the component reads this field
-  3. `components/admin/editors/HeadingEditor.tsx` — the editor writes this field
-  4. All existing content JSON using the old field name
+  2. `lib/schemas.ts` — the zod field
+  3. `components/blocks/HeadingBlock.tsx` — the component reads this field
+  4. `components/admin/editors/HeadingEditor.tsx` — the editor writes this field
+  5. `components/admin/manifests.ts` — the default value
+  6. All existing content JSON using the old field name
 
 - **Changing the ApiResponse envelope** — `lib/admin-api.ts` assumes `{success, data?, error?}`. Changing this breaks every admin fetch.
 
@@ -100,6 +110,8 @@ These changes WILL break the admin panel unless you update multiple files in syn
 - **Changing slug regex `^[a-z0-9-]+$`** — the server and admin UI both validate slugs. Change one without the other and you get cryptic errors.
 
 - **Changing `/content/` directory structure** — `lib/content.ts` hardcodes `content/pages/` and `content/site.json`. Moving these breaks the loader.
+
+- **Adding a top-level CSS framework** — primitives use CSS Modules and CSS variables. Mixing in Tailwind/etc. will fight the token system and cause specificity wars.
 
 ## Zone Rules (Framework vs. Client)
 
@@ -112,9 +124,9 @@ A client site has `.client-site` at the repo root (created by `website-init`). I
 - **Editable (client zone):**
   - `client/**` — custom blocks, custom editors, custom themes, gallery registrations, block type extensions
   - `content/pages/*.json` — page content
-  - `content/site.json` — nav, fonts, colors
+  - `content/site.json` — nav, fonts, colors, theme
   - `public/uploads/**` — client-uploaded images
-- **Read-only (framework zone):** everything else (`app/`, `components/`, `lib/`, `middleware.ts`, `next.config.ts`, `Dockerfile`, `nginx.conf`, `content/themes/`, `content/placeholders.json`, framework docs).
+- **Read-only (framework zone):** everything else (`app/`, `components/`, `lib/`, `middleware.ts`, `next.config.ts`, `Dockerfile`, `nginx.conf`, `content/themes/`, framework docs).
 
 ### Framework repo
 
@@ -150,3 +162,4 @@ When `/website-init` runs, it clones the framework and sets up a `framework` git
 - `output: 'standalone'` in next.config — not static export
 - Slugs must match `^[a-z0-9-]+$`
 - Immutable updates — never mutate content objects
+- All CSS uses tokens (CSS variables) — never hardcode colors, spacing, or font sizes in components

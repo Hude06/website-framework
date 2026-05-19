@@ -1,16 +1,53 @@
 {
   "title": "Home",
   "slug": "home",
+  "description": "Welcome to your new website.",
   "blocks": [
     {
-      "id": "home-1",
-      "type": "heading",
-      "text": "Blank canvas"
+      "id": "home-hero",
+      "type": "hero",
+      "title": "A small site, made well.",
+      "subtitle": "Built on the website-framework. Edit me at /admin — no code, no deploys, just save.",
+      "buttons": [
+        { "label": "Learn more", "href": "/about" },
+        { "label": "Get in touch", "href": "/contact", "variant": "secondary" }
+      ],
+      "align": "left"
     },
     {
-      "id": "home-2",
-      "type": "paragraph",
-      "text": "This is an empty starter page. Run /website-init to scaffold a new client site, or open /admin to start editing. Visit /gallery to browse every block type the framework ships with."
+      "id": "home-grid",
+      "type": "grid",
+      "heading": "What this is",
+      "columns": 3,
+      "items": [
+        {
+          "title": "Block-based pages",
+          "body": "Every page is JSON. Each block renders itself. Edit content without touching code."
+        },
+        {
+          "title": "Admin panel",
+          "body": "Visit /admin to add, edit, and reorder blocks. Changes save back to JSON and commit on rebuild."
+        },
+        {
+          "title": "Themeable",
+          "body": "Five built-in themes (editorial / studio / tech / warm / monochrome). Switch in site.json."
+        }
+      ]
+    },
+    {
+      "id": "home-quote",
+      "type": "quote",
+      "quote": "The best way to predict the future is to render it.",
+      "author": "Alan Kay (probably)",
+      "role": "Computer scientist"
+    },
+    {
+      "id": "home-cta",
+      "type": "section",
+      "heading": "Ready to ship?",
+      "body": "Open /admin to start editing.",
+      "background": "muted",
+      "padding": "lg"
     }
   ]
 }

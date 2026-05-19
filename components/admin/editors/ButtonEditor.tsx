@@ -1,44 +1,36 @@
 'use client';
 
-import type { ButtonBlock } from '@/lib/types';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import type { ButtonBlock } from '../../../lib/types';
+import { Stack, TextField, SelectField } from '../../../lib/ui';
 
-interface ButtonEditorProps {
-  block: ButtonBlock;
-  onChange: (block: ButtonBlock) => void;
-}
+const variantOptions = [
+  { value: 'primary', label: 'Primary' },
+  { value: 'secondary', label: 'Secondary' },
+  { value: 'ghost', label: 'Ghost' },
+  { value: 'accent', label: 'Accent' },
+  { value: 'destructive', label: 'Destructive' },
+];
 
-export function ButtonEditor({ block, onChange }: ButtonEditorProps) {
+const sizeOptions = [
+  { value: 'sm', label: 'Small' },
+  { value: 'md', label: 'Medium' },
+  { value: 'lg', label: 'Large' },
+];
+
+const alignOptions = [
+  { value: 'left', label: 'Left' },
+  { value: 'center', label: 'Center' },
+  { value: 'right', label: 'Right' },
+];
+
+export function ButtonEditor({ block, onChange }: { block: ButtonBlock; onChange: (b: ButtonBlock) => void }) {
   return (
-    <div className="space-y-2">
-      <div>
-        <Label>Text</Label>
-        <Input
-          value={block.text}
-          onChange={(e) => onChange({ ...block, text: e.target.value })}
-        />
-      </div>
-      <div>
-        <Label>Link URL</Label>
-        <Input
-          value={block.href}
-          onChange={(e) => onChange({ ...block, href: e.target.value })}
-        />
-      </div>
-      <div>
-        <Label>Variant</Label>
-        <select
-          value={block.variant ?? 'default'}
-          onChange={(e) => onChange({ ...block, variant: e.target.value as ButtonBlock['variant'] })}
-          className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm"
-        >
-          <option value="default">Default</option>
-          <option value="secondary">Secondary</option>
-          <option value="outline">Outline</option>
-          <option value="ghost">Ghost</option>
-        </select>
-      </div>
-    </div>
+    <Stack gap={4}>
+      <TextField label="Label" value={block.label} onChange={(label) => onChange({ ...block, label })} />
+      <TextField label="Link (href)" hint="/, https://…, #anchor, mailto:" value={block.href} onChange={(href) => onChange({ ...block, href })} />
+      <SelectField label="Variant" value={block.variant ?? 'primary'} options={variantOptions} onChange={(v) => onChange({ ...block, variant: v as ButtonBlock['variant'] })} />
+      <SelectField label="Size" value={block.size ?? 'md'} options={sizeOptions} onChange={(v) => onChange({ ...block, size: v as ButtonBlock['size'] })} />
+      <SelectField label="Alignment" value={block.align ?? 'left'} options={alignOptions} onChange={(v) => onChange({ ...block, align: v as ButtonBlock['align'] })} />
+    </Stack>
   );
 }

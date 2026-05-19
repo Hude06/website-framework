@@ -1,19 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Separator } from '@/components/ui/separator';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-  DialogTrigger,
-  DialogClose,
-} from '@/components/ui/dialog';
+import { Button, TextField } from '../../lib/ui';
+import styles from './PageSidebar.module.css';
 
 interface PageInfo {
   slug: string;
@@ -22,170 +11,113 @@ interface PageInfo {
 
 interface PageSidebarProps {
   pages: PageInfo[];
-  selectedSlug: string | null;
-  isNavSelected: boolean;
-  isSettingsSelected: boolean;
-  onSelectPage: (slug: string) => void;
-  onSelectNav: () => void;
-  onSelectSettings: () => void;
-  onAddPage: (title: string, slug: string) => void;
-  onDeletePage: (slug: string) => void;
-  width: number;
+  currentSlug: string | null;
+  onSelect: (slug: string) => void;
+  onCreate: (title: string, slug: string) => Promise<void>;
+  onDelete: (slug: string) => Promise<void>;
+  view: 'page' | 'nav' | 'settings';
+  onSelectView: (v: 'nav' | 'settings') => void;
+}
+
+function slugify(text: string): string {
+  return text.toLowerCase().replace(/[^a-z0-9-]+/g, '-').replace(/^-+|-+$/g, '');
 }
 
 export function PageSidebar({
   pages,
-  selectedSlug,
-  isNavSelected,
-  isSettingsSelected,
-  onSelectPage,
-  onSelectNav,
-  onSelectSettings,
-  onAddPage,
-  onDeletePage,
-  width,
+  currentSlug,
+  onSelect,
+  onCreate,
+  onDelete,
+  view,
+  onSelectView,
 }: PageSidebarProps) {
+  const [creating, setCreating] = useState(false);
   const [newTitle, setNewTitle] = useState('');
   const [newSlug, setNewSlug] = useState('');
-  const [addOpen, setAddOpen] = useState(false);
-  const [deleteOpen, setDeleteOpen] = useState(false);
 
-  function handleTitleChange(value: string) {
-    setNewTitle(value);
-    setNewSlug(
-      value
-        .toLowerCase()
-        .replace(/[^a-z0-9\s-]/g, '')
-        .replace(/\s+/g, '-')
-    );
-  }
-
-  function handleAdd() {
-    if (newTitle.trim() && newSlug.trim()) {
-      onAddPage(newTitle.trim(), newSlug.trim());
-      setNewTitle('');
-      setNewSlug('');
-      setAddOpen(false);
-    }
-  }
-
-  function handleDelete() {
-    if (selectedSlug) {
-      onDeletePage(selectedSlug);
-      setDeleteOpen(false);
-    }
+  async function handleCreate() {
+    if (!newTitle.trim() || !newSlug.trim()) return;
+    await onCreate(newTitle.trim(), newSlug.trim());
+    setNewTitle('');
+    setNewSlug('');
+    setCreating(false);
   }
 
   return (
-    <aside style={{ width }} className="shrink-0 bg-muted/30 flex flex-col">
-      <div className="p-4 font-semibold text-sm">Admin</div>
-      <Separator />
-
-      <div className="p-2 space-y-1">
-        <Button
-          variant={isNavSelected ? 'secondary' : 'ghost'}
-          size="sm"
-          className="w-full justify-start"
-          onClick={onSelectNav}
-        >
-          Navigation
-        </Button>
-        <Button
-          variant={isSettingsSelected ? 'secondary' : 'ghost'}
-          size="sm"
-          className="w-full justify-start"
-          onClick={onSelectSettings}
-        >
-          Settings
-        </Button>
-      </div>
-
-      <Separator />
-      <div className="px-4 py-2 text-xs font-medium text-muted-foreground uppercase tracking-wider">
-        Pages
-      </div>
-
-      <nav className="flex-1 overflow-y-auto px-2 space-y-1">
-        {pages.map((page) => (
-          <Button
-            key={page.slug}
-            variant={page.slug === selectedSlug ? 'secondary' : 'ghost'}
-            size="sm"
-            className="w-full justify-start"
-            onClick={() => onSelectPage(page.slug)}
-          >
-            {page.title}
-          </Button>
-        ))}
-      </nav>
-      <Separator />
-      <div className="p-2 space-y-2">
-        <Dialog open={addOpen} onOpenChange={setAddOpen}>
-          <DialogTrigger
-            render={
-              <Button variant="outline" size="sm" className="w-full" />
-            }
-          >
-            + Add Page
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>New Page</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-3">
-              <div>
-                <Label>Title</Label>
-                <Input
-                  value={newTitle}
-                  onChange={(e) => handleTitleChange(e.target.value)}
-                  placeholder="Page title"
-                />
-              </div>
-              <div>
-                <Label>Slug</Label>
-                <Input
-                  value={newSlug}
-                  onChange={(e) => setNewSlug(e.target.value)}
-                  placeholder="page-slug"
-                />
-              </div>
-            </div>
-            <DialogFooter>
-              <DialogClose render={<Button variant="ghost" />}>
-                Cancel
-              </DialogClose>
-              <Button onClick={handleAdd}>Create</Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-
-        {selectedSlug && (
-          <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
-            <DialogTrigger
-              render={
-                <Button variant="ghost" size="sm" className="w-full text-destructive" />
-              }
+    <aside className={styles.sidebar}>
+      <div className={styles.section}>
+        <div className={styles.sectionLabel}>Pages</div>
+        <div className={styles.list}>
+          {pages.map((p) => (
+            <button
+              key={p.slug}
+              className={`${styles.item} ${view === 'page' && currentSlug === p.slug ? styles.itemActive : ''}`}
+              onClick={() => onSelect(p.slug)}
             >
-              Delete Page
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Delete &quot;{selectedSlug}&quot;?</DialogTitle>
-              </DialogHeader>
-              <p className="text-sm text-muted-foreground">
-                This will permanently delete this page and its content.
-              </p>
-              <DialogFooter>
-                <DialogClose render={<Button variant="ghost" />}>
-                  Cancel
-                </DialogClose>
-                <Button variant="destructive" onClick={handleDelete}>
-                  Delete
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
+              <span>{p.title}</span>
+              <span className={styles.slug}>/{p.slug}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className={styles.newPage}>
+        {creating ? (
+          <>
+            <TextField
+              label="Page title"
+              value={newTitle}
+              onChange={(v) => {
+                setNewTitle(v);
+                if (!newSlug || newSlug === slugify(newTitle)) setNewSlug(slugify(v));
+              }}
+              placeholder="About us"
+            />
+            <TextField
+              label="Slug"
+              value={newSlug}
+              onChange={(v) => setNewSlug(slugify(v))}
+              placeholder="about-us"
+              hint="Lowercase, dashes only"
+            />
+            <div className={styles.flex}>
+              <Button variant="primary" size="sm" onClick={handleCreate}>Create</Button>
+              <Button variant="ghost" size="sm" onClick={() => setCreating(false)}>Cancel</Button>
+            </div>
+          </>
+        ) : (
+          <Button variant="secondary" size="sm" onClick={() => setCreating(true)}>+ New page</Button>
         )}
+        {currentSlug && view === 'page' && currentSlug !== 'home' && (
+          <Button
+            variant="destructive"
+            size="sm"
+            onClick={() => {
+              if (confirm(`Delete page "${currentSlug}"?`)) onDelete(currentSlug);
+            }}
+          >
+            Delete current page
+          </Button>
+        )}
+      </div>
+
+      <div className={styles.section}>
+        <div className={styles.sectionLabel}>Site</div>
+        <div className={styles.list}>
+          <button
+            className={`${styles.item} ${view === 'nav' ? styles.itemActive : ''}`}
+            onClick={() => onSelectView('nav')}
+          >
+            Navigation
+          </button>
+          <button
+            className={`${styles.item} ${view === 'settings' ? styles.itemActive : ''}`}
+            onClick={() => onSelectView('settings')}
+          >
+            Settings
+          </button>
+        </div>
       </div>
     </aside>
   );

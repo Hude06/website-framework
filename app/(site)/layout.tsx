@@ -1,19 +1,18 @@
 import { loadSiteConfig } from '@/lib/content';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
+import styles from './layout.module.css';
 
 const config = loadSiteConfig();
 
 export default function SiteLayout({
   children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+}: Readonly<{ children: React.ReactNode }>) {
   return (
-    <>
+    <div className={styles.shell}>
       <Header siteName={config.siteName} nav={config.nav} />
-      <main className="flex-1 max-w-4xl mx-auto px-4 py-8 w-full">{children}</main>
+      <main className={styles.main}>{children}</main>
       <Footer siteName={config.siteName} />
-    </>
+    </div>
   );
 }

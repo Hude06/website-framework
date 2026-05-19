@@ -14,14 +14,19 @@ Scaffold a new client website from the `Hude06/website-framework` GitHub repo.
 
 ## Required Reading — Before Scaffolding Any Content
 
-Before you write a single line of content, block, or JSON for the new site, read `DESIGN_TOOLKITS.md` in the framework root. Jump to Section 1 ("Quick chooser by website type") and find the row that matches the site you're building.
+Before you write a single line of content, block, or JSON for the new site, read:
 
-- If the chooser says the framework is the right fit, note the **Add-ons** (e.g., Tremor for dashboards, GSAP for agency sites) and install them as part of scaffolding.
-- If the chooser says **"break glass"** (e.g., docs should use Nextra, not this framework), STOP and ask the user: "This framework is Next.js with a JSON block system, but for a {site type} I'd recommend {alternative} instead. Do you want me to: (a) use {alternative}, (b) force-fit this framework anyway, or (c) help you pick?"
-- Use the default stack the framework ships with (Tailwind + shadcn + Lucide + Motion) unless the chooser recommends otherwise.
-- Use the fonts recommended in Section 6 — specifically the "Pairings that work" table — rather than picking blind.
+1. `AI_PLAYBOOK.md` — the menu of 10 base blocks, 5 theme presets, UI primitives, design tokens
+2. `DESIGN_TOOLKITS.md` — when this framework is the right tool (and when to break glass to Nextra/Astro/etc.)
 
-Never hand-roll custom JSX inside `app/(site)/` pages. Always use the block system. If you need something the blocks don't support, add a new block type following the 6-file checklist in `CLAUDE.md`.
+The framework ships with hand-rolled UI primitives in `lib/ui/` + CSS Modules + CSS variable tokens. **Do NOT add Tailwind, shadcn, or any other CSS framework.** UI customization happens by:
+- Picking one of the 5 theme presets in `site.json`
+- Composing pages from the 10 base blocks
+- Adding custom blocks per-client in `client/blocks/` for anything the base 10 don't cover
+
+If the chooser in DESIGN_TOOLKITS says **"break glass"** (e.g., docs should use Nextra, not this framework), STOP and ask the user: "This framework is Next.js with a JSON block system, but for a {site type} I'd recommend {alternative} instead. Do you want me to: (a) use {alternative}, (b) force-fit this framework anyway, or (c) help you pick?"
+
+Never hand-roll custom JSX inside `app/(site)/` pages. Always use the block system. If you need something the blocks don't support, add a new client-specific block (see `client/README.md`) rather than editing framework files.
 
 ## Security Rules — READ FIRST
 
@@ -115,7 +120,7 @@ git add -f .client-site
 
 ### Step 2: Customize Content Files
 
-The framework ships with a blank skeleton at `content/site.json` and `content/pages/home.json`. Build the client's site by editing these files (and adding more pages under `content/pages/` as needed). If you want ideas or examples of how blocks fit together, peek at `examples/starter-site/` — it's reference material, not a starting point.
+The framework ships with starter content at `content/site.json` and `content/pages/{home,about,contact}.json`. Build the client's site by editing these files (and adding more pages under `content/pages/` as needed). Read `AI_PLAYBOOK.md` for the catalog of the 10 base blocks and how they compose.
 
 **`content/site.json`:**
 - Set `siteName` to the provided site name

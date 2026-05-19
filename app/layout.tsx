@@ -1,5 +1,4 @@
 import type { Metadata } from 'next';
-import { loadSiteConfig } from '@/lib/content';
 import {
   Geist,
   Instrument_Serif,
@@ -9,13 +8,13 @@ import {
   Fraunces,
   Lora,
 } from 'next/font/google';
+import { loadSiteConfig } from '@/lib/content';
 import { cn } from '@/lib/utils';
 import { SmoothAnchorScroll } from '@/components/SmoothAnchorScroll';
 import { PlausibleScript } from '@/components/PlausibleScript';
 import './globals.css';
 
-const geist = Geist({ subsets: ['latin'], variable: '--font-sans' });
-
+const geist = Geist({ subsets: ['latin'], variable: '--font-geist' });
 const instrumentSerif = Instrument_Serif({
   subsets: ['latin'],
   weight: '400',
@@ -33,12 +32,12 @@ const jetbrainsMono = JetBrains_Mono({
 const fraunces = Fraunces({ subsets: ['latin'], variable: '--font-fraunces' });
 const lora = Lora({ subsets: ['latin'], variable: '--font-lora' });
 
-const FONT_PAIR_VARS: Record<string, { heading: string; body: string }> = {
-  editorial: { heading: 'var(--font-instrument-serif)', body: 'var(--font-inter)' },
-  studio: { heading: 'var(--font-bricolage)', body: 'var(--font-jetbrains-mono)' },
-  tech: { heading: 'var(--font-jetbrains-mono)', body: 'var(--font-sans)' },
-  warm: { heading: 'var(--font-fraunces)', body: 'var(--font-lora)' },
-  monochrome: { heading: 'var(--font-sans)', body: 'var(--font-sans)' },
+const FONT_PAIR_VARS: Record<string, { display: string; body: string }> = {
+  editorial: { display: 'var(--font-instrument-serif)', body: 'var(--font-inter)' },
+  studio: { display: 'var(--font-bricolage)', body: 'var(--font-jetbrains-mono)' },
+  tech: { display: 'var(--font-jetbrains-mono)', body: 'var(--font-geist)' },
+  warm: { display: 'var(--font-fraunces)', body: 'var(--font-lora)' },
+  monochrome: { display: 'var(--font-geist)', body: 'var(--font-geist)' },
 };
 
 const config = loadSiteConfig();
@@ -47,44 +46,32 @@ export const metadata: Metadata = {
   title: config.siteName,
 };
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
-  const pair = config.fonts.pair ?? null;
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  const pair = config.fonts?.pair ?? null;
   const pairVars = pair && FONT_PAIR_VARS[pair];
 
-  const cssVars = {
-    '--font-heading': pairVars?.heading ?? config.fonts.heading,
-    '--font-body': pairVars?.body ?? config.fonts.body,
-    '--color-primary': config.colors.primary,
-    '--color-secondary': config.colors.secondary,
-    '--color-background': config.colors.background,
-    '--color-text': config.colors.text,
+  const cssVars: React.CSSProperties = {
+    '--font-display': pairVars?.display ?? config.fonts?.heading ?? 'var(--font-geist)',
+    '--font-body': pairVars?.body ?? config.fonts?.body ?? 'var(--font-geist)',
   } as React.CSSProperties;
 
   const themePreset = config.theme?.preset;
   const appearance = config.theme?.appearance ?? 'light';
 
+  const htmlClass = cn(
+    appearance === 'dark' && 'dark',
+    geist.variable,
+    instrumentSerif.variable,
+    inter.variable,
+    bricolage.variable,
+    jetbrainsMono.variable,
+    fraunces.variable,
+    lora.variable,
+  );
+
   return (
-    <html
-      lang="en"
-      data-theme={themePreset}
-      data-appearance={appearance}
-      className={cn(
-        'font-sans',
-        appearance === 'dark' && 'dark',
-        geist.variable,
-        instrumentSerif.variable,
-        inter.variable,
-        bricolage.variable,
-        jetbrainsMono.variable,
-        fraunces.variable,
-        lora.variable,
-      )}
-    >
-      <body className="min-h-screen flex flex-col antialiased" style={cssVars}>
+    <html lang="en" data-theme={themePreset} data-appearance={appearance} className={htmlClass}>
+      <body style={cssVars}>
         <SmoothAnchorScroll />
         {children}
         <PlausibleScript />

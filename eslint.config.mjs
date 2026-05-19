@@ -12,6 +12,9 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Stale worktrees from prior Claude sessions — never lint these:
+    ".claude/**",
+    "coverage/**",
   ]),
 ]);
 

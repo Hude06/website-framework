@@ -1,62 +1,53 @@
 'use client';
 
-import type { TwoColumnBlock } from '@/lib/types';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
-import { Card, CardContent } from '@/components/ui/card';
+import type { TwoColumnBlock, ColumnSide } from '../../../lib/types';
+import { Stack, TextField, TextAreaField, ImageField, SelectField, ToggleField } from '../../../lib/ui';
 
-type Column = TwoColumnBlock['left'];
+const ratioOptions = [
+  { value: '50-50', label: '50 / 50 (even)' },
+  { value: '60-40', label: '60 / 40 (left heavy)' },
+  { value: '40-60', label: '40 / 60 (right heavy)' },
+];
 
-interface TwoColumnEditorProps {
-  block: TwoColumnBlock;
-  onChange: (block: TwoColumnBlock) => void;
+function SideEditor({
+  label,
+  side,
+  onChange,
+}: {
+  label: string;
+  side: ColumnSide;
+  onChange: (next: ColumnSide) => void;
+}) {
+  const hasButton = !!side.button;
+  return (
+    <Stack gap={3}>
+      <strong style={{ fontSize: 'var(--text-sm)', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--muted-foreground)', fontFamily: 'var(--font-mono)' }}>
+        {label}
+      </strong>
+      <TextField label="Title" value={side.title ?? ''} onChange={(v) => onChange({ ...side, title: v || undefined })} />
+      <TextAreaField label="Body" value={side.body ?? ''} rows={3} onChange={(v) => onChange({ ...side, body: v || undefined })} />
+      <ImageField label="Image" value={side.image ?? ''} onChange={(v) => onChange({ ...side, image: v || undefined })} alt={side.title} />
+      <ToggleField
+        label="Include button"
+        value={hasButton}
+        onChange={(v) => onChange({ ...side, button: v ? (side.button ?? { label: 'Learn more', href: '/' }) : undefined })}
+      />
+      {hasButton && side.button && (
+        <Stack gap={2}>
+          <TextField label="Button label" value={side.button.label} onChange={(label) => onChange({ ...side, button: { ...side.button!, label } })} />
+          <TextField label="Button link" value={side.button.href} onChange={(href) => onChange({ ...side, button: { ...side.button!, href } })} />
+        </Stack>
+      )}
+    </Stack>
+  );
 }
 
-export function TwoColumnEditor({ block, onChange }: TwoColumnEditorProps) {
-  function updateSide(side: 'left' | 'right', updates: Partial<Column>) {
-    onChange({ ...block, [side]: { ...block[side], ...updates } });
-  }
-
-  function renderSide(label: string, side: 'left' | 'right') {
-    const data = block[side];
-    return (
-      <Card size="sm">
-        <CardContent className="space-y-2">
-          <Label>{label}</Label>
-          <Input
-            value={data.heading ?? ''}
-            onChange={(e) => updateSide(side, { heading: e.target.value || undefined })}
-            placeholder="Heading (optional)"
-          />
-          <Textarea
-            value={data.text}
-            onChange={(e) => updateSide(side, { text: e.target.value })}
-            placeholder="Body text"
-            rows={3}
-          />
-          <Input
-            value={data.image ?? ''}
-            onChange={(e) => updateSide(side, { image: e.target.value || undefined })}
-            placeholder="Image URL (if set, replaces text)"
-          />
-        </CardContent>
-      </Card>
-    );
-  }
-
+export function TwoColumnEditor({ block, onChange }: { block: TwoColumnBlock; onChange: (b: TwoColumnBlock) => void }) {
   return (
-    <div className="space-y-3">
-      {renderSide('Left column', 'left')}
-      {renderSide('Right column', 'right')}
-      <label className="flex items-center gap-2 text-sm">
-        <input
-          type="checkbox"
-          checked={block.reverse ?? false}
-          onChange={(e) => onChange({ ...block, reverse: e.target.checked })}
-        />
-        Reverse column order on desktop
-      </label>
-    </div>
+    <Stack gap={5}>
+      <SelectField label="Ratio" value={block.ratio ?? '50-50'} options={ratioOptions} onChange={(v) => onChange({ ...block, ratio: v as TwoColumnBlock['ratio'] })} />
+      <SideEditor label="Left column" side={block.left} onChange={(left) => onChange({ ...block, left })} />
+      <SideEditor label="Right column" side={block.right} onChange={(right) => onChange({ ...block, right })} />
+    </Stack>
   );
 }

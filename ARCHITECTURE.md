@@ -256,13 +256,14 @@ The admin panel and the template are decoupled. They only share `/content/` file
   "title": "About",
   "slug": "about",
   "blocks": [
-    { "id": "b1", "type": "heading", "text": "About Me" },
-    { "id": "b2", "type": "paragraph", "text": "I design things..." },
+    { "id": "b1", "type": "heading", "text": "About Me", "level": 1, "size": "display" },
+    { "id": "b2", "type": "text", "body": "I design things…\n\nAnd I do it well." },
     { "id": "b3", "type": "image", "src": "/uploads/portrait.jpg", "alt": "Portrait" },
-    { "id": "b4", "type": "badge-group", "badges": ["React", "TypeScript"] },
-    { "id": "b5", "type": "card-grid", "cards": [{"title": "Project", "description": "..."}] },
-    { "id": "b6", "type": "button", "text": "Contact", "href": "/contact" },
-    { "id": "b7", "type": "separator" }
+    { "id": "b4", "type": "grid", "heading": "Projects", "columns": 3, "items": [
+      { "title": "Project A", "body": "Description" },
+      { "title": "Project B", "body": "Description" }
+    ]},
+    { "id": "b5", "type": "button", "label": "Contact me", "href": "/contact", "variant": "primary" }
   ]
 }
 ```
@@ -420,46 +421,55 @@ site-repo/
 │           └── rebuild/
 │               └── route.ts    # POST trigger rebuild + git commit/push
 ├── components/
-│   ├── Header.tsx
+│   ├── Header.tsx              # CSS Modules, no Tailwind
 │   ├── Footer.tsx
-│   ├── BlockRenderer.tsx
-│   ├── ui/                     # shadcn/ui components
-│   │   ├── button.tsx
-│   │   ├── card.tsx
-│   │   ├── badge.tsx
-│   │   ├── separator.tsx
-│   │   └── ...
-│   └── blocks/
+│   ├── BlockRenderer.tsx       # Registry: merges framework + client blocks
+│   ├── admin/
+│   │   ├── BlockEditor.tsx     # Dispatcher: block.type → editor component
+│   │   ├── BlockGallery.tsx    # "Add block" modal (manifests + client templates)
+│   │   ├── PageSidebar.tsx
+│   │   ├── PreviewPanel.tsx
+│   │   ├── NavEditor.tsx
+│   │   ├── SiteSettingsEditor.tsx
+│   │   ├── manifests.ts        # Block templates with defaults
+│   │   └── editors/            # One editor per block type
+│   └── blocks/                 # The 10 base block render components
 │       ├── HeadingBlock.tsx
-│       ├── ParagraphBlock.tsx
+│       ├── TextBlock.tsx
 │       ├── ImageBlock.tsx
-│       ├── BadgeGroupBlock.tsx
-│       ├── CardGridBlock.tsx
 │       ├── ButtonBlock.tsx
-│       ├── SeparatorBlock.tsx
-│       └── ...
+│       ├── HeroBlock.tsx
+│       ├── SectionBlock.tsx
+│       ├── GridBlock.tsx
+│       ├── TwoColumnBlock.tsx
+│       ├── QuoteBlock.tsx
+│       └── FormBlock.tsx
 ├── lib/
+│   ├── ui/                     # 12 hand-rolled UI primitives + CSS Modules
+│   │   ├── Container.tsx       # Display: Container, Stack, Heading, Text, Button
+│   │   ├── TextField.tsx       # Form: TextField, TextAreaField, NumberField,
+│   │   ├── ArrayField.tsx      #       SelectField, ToggleField, ImageField, ArrayField
+│   │   └── ...
 │   ├── content.ts              # loadPage(), loadSiteConfig(), listPages()
 │   ├── types.ts                # Block, PageContent, SiteConfig types
-│   └── utils.ts                # shadcn cn() utility
+│   ├── schemas.ts              # Zod schemas — validate admin saves
+│   ├── themes.ts               # Theme preset loader
+│   ├── motion.tsx              # Reveal / Stagger / Parallax (Framer Motion)
+│   └── utils.ts                # cn() class joiner (no Tailwind merge)
 ├── content/
-│   ├── pages/
-│   │   ├── home.json
-│   │   ├── about.json
-│   │   └── contact.json
+│   ├── pages/                  # JSON: home, about, contact
+│   ├── themes/                 # 5 theme preset JSON files
 │   ├── uploads/                # Client-uploaded images (< 10, committed to git)
-│   └── site.json
+│   └── site.json               # Site name, nav, fonts, theme preset
 ├── public/
 │   └── images/                 # Static template assets
 ├── deploy.json                 # Deployment config (created by /deploy-init)
 ├── Dockerfile
 ├── next.config.ts
-├── components.json             # shadcn config
-├── postcss.config.mjs
-├── tailwind config (v4 — auto)
 ├── tsconfig.json
 ├── jest.config.ts
-├── package.json
+├── eslint.config.mjs
+├── package.json                # 6 runtime deps: next, react, react-dom, lucide-react, motion, zod
 └── README.md
 ```
 

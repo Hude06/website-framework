@@ -1,338 +1,170 @@
-export interface HeadingBlock {
-  id: string;
-  type: 'heading';
-  text: string;
-  level?: 1 | 2 | 3 | 4 | 5 | 6;
-}
+/* ============================================================
+   Shared sub-types
+   ============================================================ */
+export type HeadingLevel = 1 | 2 | 3 | 4 | 5 | 6;
+export type HeadingSize = 'sm' | 'md' | 'lg' | 'xl' | 'display' | 'hero';
+export type TextSize = 'xs' | 'sm' | 'base' | 'lg' | 'xl';
+export type TextTone = 'default' | 'muted' | 'accent';
+export type TextWeight = 'regular' | 'medium' | 'semibold' | 'bold';
+export type Align = 'left' | 'center' | 'right';
+export type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'accent' | 'destructive';
+export type ButtonSize = 'sm' | 'md' | 'lg';
+export type ImageWidth = 'narrow' | 'default' | 'wide' | 'full';
+export type SectionBackground = 'default' | 'muted' | 'card' | 'accent';
+export type SectionPadding = 'sm' | 'md' | 'lg' | 'xl';
+export type GridColumns = 2 | 3 | 4;
+export type ColumnRatio = '50-50' | '60-40' | '40-60';
+export type FormFieldType = 'text' | 'textarea' | 'email';
 
-export interface ParagraphBlock {
-  id: string;
-  type: 'paragraph';
-  text: string;
-}
-
-export interface ImageBlock {
-  id: string;
-  type: 'image';
-  src: string;
-  alt: string;
-}
-
-export interface BadgeGroupBlock {
-  id: string;
-  type: 'badge-group';
-  badges: string[];
-}
-
-export interface CardBlock {
-  id: string;
-  type: 'card';
-  title: string;
-  description: string;
-  image?: string;
-  link?: string;
-}
-
-export interface CardGridBlock {
-  id: string;
-  type: 'card-grid';
-  cards: Omit<CardBlock, 'id' | 'type'>[];
-}
-
-export interface ButtonBlock {
-  id: string;
-  type: 'button';
-  text: string;
-  href: string;
-  variant?: 'default' | 'secondary' | 'outline' | 'ghost';
-}
-
-export interface SeparatorBlock {
-  id: string;
-  type: 'separator';
-}
-
-export interface HeroBlock {
-  id: string;
-  type: 'hero';
-  eyebrow?: string;
-  headline: string;
-  subheadline?: string;
-  primaryCta?: { text: string; href: string };
-  secondaryCta?: { text: string; href: string };
-  image?: string;
-  align?: 'left' | 'center';
-}
-
-export interface FeatureItem {
-  icon?: string;
-  title: string;
-  description: string;
-}
-
-export interface FeatureGridBlock {
-  id: string;
-  type: 'feature-grid';
-  eyebrow?: string;
-  heading?: string;
-  items: FeatureItem[];
-  columns?: 2 | 3 | 4;
-}
-
-export interface CtaBlock {
-  id: string;
-  type: 'cta';
-  eyebrow?: string;
-  title: string;
-  description?: string;
-  primaryCta?: { text: string; href: string };
-  secondaryCta?: { text: string; href: string };
-  tone?: 'default' | 'bold' | 'quiet';
-}
-
-export interface FaqItem {
-  question: string;
-  answer: string;
-}
-
-export interface FaqBlock {
-  id: string;
-  type: 'faq';
-  eyebrow?: string;
-  heading?: string;
-  items: FaqItem[];
-}
-
-export interface StatItem {
-  value: string;
+export interface CtaLink {
   label: string;
-  caption?: string;
+  href: string;
+  variant?: ButtonVariant;
 }
 
-export interface StatsBlock {
-  id: string;
-  type: 'stats';
-  eyebrow?: string;
-  heading?: string;
-  items: StatItem[];
-}
-
-export interface PricingTier {
-  name: string;
-  price: string;
-  period?: string;
-  description?: string;
-  features: string[];
-  ctaText: string;
-  ctaHref: string;
-  featured?: boolean;
-}
-
-export interface PricingBlock {
-  id: string;
-  type: 'pricing';
-  eyebrow?: string;
-  heading?: string;
-  tiers: PricingTier[];
-}
-
-export interface StepItem {
+export interface GridItem {
   title: string;
-  description: string;
-}
-
-export interface StepsBlock {
-  id: string;
-  type: 'steps';
-  eyebrow?: string;
-  heading?: string;
-  steps: StepItem[];
-}
-
-export interface TeamMember {
-  name: string;
-  role: string;
-  bio?: string;
+  body?: string;
   image?: string;
-  link?: string;
 }
 
-export interface TeamBlock {
-  id: string;
-  type: 'team';
-  eyebrow?: string;
-  heading?: string;
-  members: TeamMember[];
-}
-
-export interface RichTextBlock {
-  id: string;
-  type: 'rich-text';
-  content: string;
-}
-
-export interface VideoBlock {
-  id: string;
-  type: 'video';
-  src: string;
+export interface ColumnSide {
   title?: string;
-  provider?: 'youtube' | 'vimeo' | 'file';
-  aspectRatio?: '16:9' | '4:3' | '1:1' | '21:9';
+  body?: string;
+  image?: string;
+  button?: CtaLink;
 }
 
-export interface ContactFormBlock {
-  id: string;
-  type: 'contact-form';
-  eyebrow?: string;
-  heading?: string;
-  description?: string;
-  submitLabel?: string;
-  action?: string;
-  fields?: Array<'name' | 'email' | 'subject' | 'message'>;
+export interface FormField {
+  name: string;
+  label: string;
+  type: FormFieldType;
+  required?: boolean;
+  placeholder?: string;
 }
 
-export interface TwoColumnBlock {
-  id: string;
-  type: 'two-column';
-  left: { heading?: string; text: string; image?: string };
-  right: { heading?: string; text: string; image?: string };
-  reverse?: boolean;
-}
-
-export interface QuoteBlock {
-  id: string;
-  type: 'quote';
-  quote: string;
-  author: string;
-  role?: string;
-  avatar?: string;
-}
-
-export type AnnotationVariant = 'note' | 'chip' | 'callout' | 'popover' | 'tag';
-
-export interface Annotation {
-  id: string;
-  text: string;
-  x: number;
-  y: number;
-  variant?: AnnotationVariant;
-  emoji?: string;
-  rotate?: number;
-  delay?: number;
-  arrow?: {
-    targetX: number;
-    targetY: number;
-    curvature?: number;
-  };
-}
-
-export type AnnotatedHeroImagePosition = 'left' | 'right';
-export type AnnotatedHeroImageAspect = 'landscape' | 'square' | 'portrait';
-
-export interface AnnotatedHeroBlock {
-  id: string;
-  type: 'annotated-hero';
-  eyebrow?: string;
-  headline: string;
-  subheadline?: string;
-  caption?: string;
-  primaryCta?: { text: string; href: string };
-  secondaryCta?: { text: string; href: string };
-  image: string;
-  imageAlt?: string;
-  imagePosition?: AnnotatedHeroImagePosition;
-  imageAspect?: AnnotatedHeroImageAspect;
-  annotations?: Annotation[];
-  align?: 'left' | 'center';
-}
-
-export type SectionBackground = 'default' | 'muted' | 'foreground' | 'accent' | 'card';
-export type SectionWidth = 'narrow' | 'standard' | 'wide' | 'full';
-export type SectionPadding = 'none' | 'sm' | 'md' | 'lg' | 'xl';
-
-export interface SectionBlock {
-  id: string;
-  type: 'section';
-  background?: SectionBackground;
-  width?: SectionWidth;
-  padding?: SectionPadding;
-  reveal?: boolean;
-  blocks: LeafBlock[];
-}
-
-export type LeafBlock =
-  | HeadingBlock
-  | ParagraphBlock
-  | ImageBlock
-  | BadgeGroupBlock
-  | CardBlock
-  | CardGridBlock
-  | ButtonBlock
-  | SeparatorBlock
-  | HeroBlock
-  | AnnotatedHeroBlock
-  | FeatureGridBlock
-  | CtaBlock
-  | FaqBlock
-  | StatsBlock
-  | PricingBlock
-  | StepsBlock
-  | TeamBlock
-  | RichTextBlock
-  | VideoBlock
-  | ContactFormBlock
-  | TwoColumnBlock
-  | QuoteBlock;
-
-import type { ClientBlock } from '../client/types';
-
+/* ============================================================
+   Block types — the 10 base blocks
+   ============================================================ */
 export interface BaseBlock {
   id: string;
   type: string;
 }
 
+export interface HeadingBlock extends BaseBlock {
+  type: 'heading';
+  text: string;
+  level?: HeadingLevel;
+  size?: HeadingSize;
+  tone?: TextTone;
+  align?: Align;
+}
+
+export interface TextBlock extends BaseBlock {
+  type: 'text';
+  body: string;
+  size?: TextSize;
+  tone?: TextTone;
+  weight?: TextWeight;
+  align?: Align;
+}
+
+export interface ImageBlock extends BaseBlock {
+  type: 'image';
+  src: string;
+  alt: string;
+  caption?: string;
+  width?: ImageWidth;
+}
+
+export interface ButtonBlock extends BaseBlock {
+  type: 'button';
+  label: string;
+  href: string;
+  variant?: ButtonVariant;
+  size?: ButtonSize;
+  align?: Align;
+}
+
+export interface HeroBlock extends BaseBlock {
+  type: 'hero';
+  title: string;
+  subtitle?: string;
+  buttons?: CtaLink[];
+  image?: string;
+  align?: Align;
+}
+
+export interface SectionBlock extends BaseBlock {
+  type: 'section';
+  heading?: string;
+  body?: string;
+  background?: SectionBackground;
+  padding?: SectionPadding;
+  anchor?: string;
+}
+
+export interface GridBlock extends BaseBlock {
+  type: 'grid';
+  heading?: string;
+  items: GridItem[];
+  columns?: GridColumns;
+}
+
+export interface TwoColumnBlock extends BaseBlock {
+  type: 'two-column';
+  left: ColumnSide;
+  right: ColumnSide;
+  ratio?: ColumnRatio;
+}
+
+export interface QuoteBlock extends BaseBlock {
+  type: 'quote';
+  quote: string;
+  author?: string;
+  role?: string;
+  image?: string;
+}
+
+export interface FormBlock extends BaseBlock {
+  type: 'form';
+  heading?: string;
+  fields: FormField[];
+  submitLabel?: string;
+  action?: string;
+}
+
 export type FrameworkBlock =
   | HeadingBlock
-  | ParagraphBlock
+  | TextBlock
   | ImageBlock
-  | BadgeGroupBlock
-  | CardBlock
-  | CardGridBlock
   | ButtonBlock
-  | SeparatorBlock
   | HeroBlock
-  | AnnotatedHeroBlock
-  | FeatureGridBlock
-  | CtaBlock
-  | FaqBlock
-  | StatsBlock
-  | PricingBlock
-  | StepsBlock
-  | TeamBlock
-  | RichTextBlock
-  | VideoBlock
-  | ContactFormBlock
+  | SectionBlock
+  | GridBlock
   | TwoColumnBlock
   | QuoteBlock
-  | SectionBlock;
+  | FormBlock;
 
-export type Block = FrameworkBlock | ClientBlock;
+/** A block in a page's JSON content. Framework code accepts this loose shape;
+   individual block components narrow to their specific union member at render
+   time. Consumers with custom blocks can declare a narrower local alias like
+   `type Block = FrameworkBlock | MyCustomBlock`. */
+export type Block = BaseBlock;
 
+/* ============================================================
+   Page + site config
+   ============================================================ */
 export interface PageContent {
   title: string;
   slug: string;
+  description?: string;
   blocks: Block[];
 }
 
 export interface NavLink {
   label: string;
   href: string;
-}
-
-export interface ApiResponse<T> {
-  success: boolean;
-  data?: T;
-  error?: string;
 }
 
 export interface SiteConfig {
@@ -357,4 +189,16 @@ export interface SiteConfig {
   motion?: {
     intensity?: 'none' | 'subtle' | 'rich';
   };
+  contact?: {
+    email?: string;
+  };
+  plausible?: {
+    domain?: string;
+  };
+}
+
+export interface ApiResponse<T> {
+  success: boolean;
+  data?: T;
+  error?: string;
 }

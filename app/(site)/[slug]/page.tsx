@@ -1,7 +1,10 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { loadPage, listPages } from '@/lib/content';
-import { BlockRenderer } from '@/components/BlockRenderer';
+import { BlockRenderer, frameworkBlocks } from '@/components/BlockRenderer';
+import { clientBlocks } from '@client/registry';
+
+const blockRegistry = { ...frameworkBlocks, ...clientBlocks };
 
 interface SlugPageProps {
   params: Promise<{ slug: string }>;
@@ -25,11 +28,11 @@ export async function generateMetadata({ params }: SlugPageProps): Promise<Metad
 
 export default async function SlugPage({ params }: SlugPageProps) {
   const { slug } = await params;
-
+  let page;
   try {
-    const page = loadPage(slug);
-    return <BlockRenderer blocks={page.blocks} />;
+    page = loadPage(slug);
   } catch {
     notFound();
   }
+  return <BlockRenderer blocks={page.blocks} registry={blockRegistry} />;
 }

@@ -1,0 +1,14 @@
+.image {
+  width: 100%;
+  height: auto;
+  border-radius: var(--radius);
+  display: block;
+}
+
+.caption {
+  margin-top: var(--space-3);
+  font-size: var(--text-sm);
+  color: var(--muted-foreground);
+  text-align: center;
+  font-style: italic;
+}
