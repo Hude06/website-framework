@@ -51,10 +51,10 @@ is_framework_zone() {
     app/*|components/*|lib/*) return 0 ;;
     middleware.ts|next.config.ts|Dockerfile|nginx.conf) return 0 ;;
     content/themes/*|content/placeholders.json) return 0 ;;
-    AI_PLAYBOOK.md|ARCHITECTURE.md|DESIGN_TOOLKITS.md|AGENTS.md|README.md|HUMAN_SPEC.md|TODO.md|SESSION_SUMMARY.md|PROMPT_REBUILD_JUDEMAKES.md) return 0 ;;
+    AI_PLAYBOOK.md|ARCHITECTURE.md|DESIGN_TOOLKITS.md|AGENTS.md) return 0 ;;
     scripts/*|.husky/*|.claude/*) return 0 ;;
-    eslint.config.mjs|jest.config.ts|postcss.config.mjs|components.json|tsconfig.json) return 0 ;;
-    *) return 1 ;;  # everything else (e.g. package.json, CLAUDE.md, .gitignore) is shared/unguarded
+    eslint.config.mjs|jest.config.ts|tsconfig.json) return 0 ;;
+    *) return 1 ;;  # everything else (package.json, README.md, CLAUDE.md, .gitignore, deploy.json) is shared/client-editable
   esac
 }
 

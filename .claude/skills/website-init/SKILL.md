@@ -12,21 +12,29 @@ Scaffold a new client website from the `Hude06/website-framework` GitHub repo.
 - Developer types `/website-init`
 - Developer says "new site", "scaffold a site", "start a new client website", "init a website"
 
-## Required Reading — Before Scaffolding Any Content
+## Required Reading — After Step 1 (Clone), Before Step 2 (Content)
 
-Before you write a single line of content, block, or JSON for the new site, read:
+The framework root only exists after Step 1 clones it. As soon as the clone lands, read these three files in the new working directory before doing any content customization:
 
-1. `AI_PLAYBOOK.md` — the menu of 10 base blocks, 5 theme presets, UI primitives, design tokens
-2. `DESIGN_TOOLKITS.md` — when this framework is the right tool (and when to break glass to Nextra/Astro/etc.)
+1. `CLAUDE.md` — zone rules (what you can/can't edit), the block system contract, and the "Safe to Change" vs "Breaks Admin Panel" reference. Read this first.
+2. `AI_PLAYBOOK.md` — the menu of 10 base blocks, 5 theme presets, 12 UI primitives, design tokens, do/don't list.
+3. `DESIGN_TOOLKITS.md` — when this framework is the right tool (and when to break glass to Nextra/Astro/etc.).
 
-The framework ships with hand-rolled UI primitives in `lib/ui/` + CSS Modules + CSS variable tokens. **Do NOT add Tailwind, shadcn, or any other CSS framework.** UI customization happens by:
-- Picking one of the 5 theme presets in `site.json`
-- Composing pages from the 10 base blocks
-- Adding custom blocks per-client in `client/blocks/` for anything the base 10 don't cover
+The framework ships with hand-rolled UI primitives in `lib/ui/` + CSS Modules + CSS variable tokens. **Do NOT add Tailwind, shadcn, or any other CSS framework.** UI customization happens entirely through:
+- Picking one of 5 theme presets (`editorial`, `studio`, `tech`, `warm`, `monochrome`) in `site.json`
+- Composing pages from the 10 base blocks (heading, text, image, button, hero, section, grid, two-column, quote, form)
+- Adding custom blocks per-client in `client/blocks/` for anything the base 10 don't cover (see `client/README.md`)
 
-If the chooser in DESIGN_TOOLKITS says **"break glass"** (e.g., docs should use Nextra, not this framework), STOP and ask the user: "This framework is Next.js with a JSON block system, but for a {site type} I'd recommend {alternative} instead. Do you want me to: (a) use {alternative}, (b) force-fit this framework anyway, or (c) help you pick?"
+The 5 theme presets — match the client's vibe to one of these:
+- **editorial** — NYT magazine × Linear changelog. Warm paper + deep ink + terracotta accent, hairline rules, no shadows. Default for personal portfolios, agency sites, editorial brands.
+- **studio** — Neo-brutalist. Black/white/neon-green accent, 0-radius edges, heavy lines. Good for design studios, creative agencies.
+- **tech** — Terminal/dashboard. Deep blue + cyan accent, tight radius. Developer tools, B2B SaaS.
+- **warm** — Apothecary, hand-made. Soft cream + terracotta, big rounded corners. Restaurants, wellness brands, lifestyle.
+- **monochrome** — Braun. Pure grayscale, minimal accent. Architecture, photography, anything where the work is the brand.
 
-Never hand-roll custom JSX inside `app/(site)/` pages. Always use the block system. If you need something the blocks don't support, add a new client-specific block (see `client/README.md`) rather than editing framework files.
+If `DESIGN_TOOLKITS.md` says the project should **"break glass"** (e.g., docs should use Nextra, not this framework), STOP and ask the user: "This framework is Next.js with a JSON block system, but for a {site type} I'd recommend {alternative} instead. Do you want me to: (a) use {alternative}, (b) force-fit this framework anyway, or (c) help you pick?"
+
+Never hand-roll custom JSX inside `app/(site)/` pages. Always use the block system. If a block type doesn't exist for what you need, add a new client-specific block (see `client/README.md`) rather than editing framework files.
 
 ## Security Rules — READ FIRST
 
@@ -72,11 +80,12 @@ Ask ALL of these in a single message. Do not ask one at a time.
 **Required:**
 - **Site name** — the display name (e.g., "Jane's Photography")
 - **Client name** — kebab-case identifier used for repo name and package name (e.g., "jane-photography"). Must match `^[a-z0-9-]+$`. Suggest one derived from the site name.
+- **Site type** — one of: portfolio, agency, restaurant, service business, blog, landing page, e-commerce, other. This drives both theme choice and starter content. (If "other", ask for a one-line description of what the site is.)
+- **Theme preset** — one of `editorial`, `studio`, `tech`, `warm`, `monochrome`. Suggest a default based on the site type (e.g., warm → restaurant; editorial → portfolio/agency; tech → developer tools; studio → design studio; monochrome → photography). The dev can override.
 
 **Optional (provide defaults):**
 - **Domain** — production domain if known (e.g., "janephotography.com"). Default: blank.
 - **Contact email** — client's email for the contact page. Default: "hello@example.com"
-- **Primary color** — hex color for the site's primary accent. Default: "#2563eb"
 - **Description** — one-line site description. Default: derived from site name.
 
 The GitHub repo will be named `{clientName}-site` (e.g., `jane-photography-site`). Mention this to the developer.
@@ -120,23 +129,38 @@ git add -f .client-site
 
 ### Step 2: Customize Content Files
 
-The framework ships with starter content at `content/site.json` and `content/pages/{home,about,contact}.json`. Build the client's site by editing these files (and adding more pages under `content/pages/` as needed). Read `AI_PLAYBOOK.md` for the catalog of the 10 base blocks and how they compose.
+The framework ships with **generic** starter content at `content/site.json` and `content/pages/{home,about,contact}.json` — those files demonstrate the block system using placeholder copy ("A small site, made well", "What this is", etc.). Your job: replace that generic content with content specific to *this* client. Don't just tweak it — write fresh content from scratch using the client's voice and what you know about their business.
 
 **`content/site.json`:**
 - Set `siteName` to the provided site name
-- Set `colors.primary` to the provided primary color
-- Update `nav` to match the pages you create
-- Keep fonts as defaults unless `DESIGN_TOOLKITS.md` Section 6 suggests something better for this site type
+- Set `theme.preset` to the chosen theme preset (one of `editorial` / `studio` / `tech` / `warm` / `monochrome`)
+- Set `theme.appearance` to `light` (default) or `dark` if the client wants dark mode
+- Set `fonts.pair` to match the theme preset (same name — `"editorial"` pair for `editorial` theme, etc.)
+- Update `nav` to match the pages you'll create — keep it short (3–5 items max)
+- The `colors` block is a legacy fallback for sites that don't use a theme preset; you can leave it at defaults
 
 **`content/pages/home.json`:**
-- Replace the placeholder content with a real home page composed for this client, using blocks from `AI_PLAYBOOK.md`
+- Replace the generic blocks with a real home page for this client. Read `AI_PLAYBOOK.md` for the block catalog.
+- Most home pages: one `hero` (always top), one `grid` (3 cards of value props or features), one `quote` (if you have a testimonial or memorable line), one `section` as a CTA at the bottom.
+- Don't add 10 blocks. 4–6 is usually right.
 
-**Add additional pages** as `content/pages/{slug}.json` based on what the client needs (about, contact, services, etc.). Use the provided contact email anywhere it's referenced.
+**`content/pages/about.json`:**
+- Replace with a real about-page composition. Typically: `heading` (page title) → `text` (the story, 1-3 paragraphs split on blank lines) → `two-column` (mission/values, or who we are/who we serve) → optional `quote`.
+
+**`content/pages/contact.json`:**
+- Keep the structure (heading + text + form) but customize:
+  - Heading: "Get in touch" or whatever fits the brand voice
+  - Form fields: keep name/email/message as the minimum; add others if the client needs them
+  - Set the form action to the provided contact email (e.g., `mailto:hello@example.com`) if no other action is set up
+
+**Additional pages:** Add `content/pages/{slug}.json` for whatever the client needs — services, pricing, work, blog, FAQ. Stick to the 10 base blocks unless the client has a need none of them cover.
 
 **`package.json`:**
 - Set `name` to the client name (kebab-case)
 - Set `description` to the provided description
 - Keep everything else unchanged
+
+**Theme preview:** mention to the developer that `npm run dev` then visiting `http://localhost:3000/ui-preview` lets them see how the chosen theme looks across all primitives. If the dev wants to try a different theme, they can change `theme.preset` in `site.json` and refresh.
 
 ### Step 3: Create deploy.json
 
@@ -182,23 +206,29 @@ Replace `README.md` with a simple client-specific version:
 npm run dev
 \`\`\`
 
-Visit http://localhost:3000 for the site, http://localhost:3000/admin for the admin panel.
+- Site: http://localhost:3000
+- Admin: http://localhost:3000/admin (password-protected in production)
+- UI preview / theme switcher: http://localhost:3000/ui-preview
+
+## Editing Content
+
+Most edits happen in the admin panel at `/admin`. Behind the scenes:
+
+- Pages: `content/pages/*.json`
+- Site config (nav, theme, site name): `content/site.json`
+- Uploads: `public/uploads/`
+
+## Custom Blocks
+
+If the 10 base blocks don't cover what you need, add a custom block in `client/blocks/`. See `client/README.md` for the walkthrough — short version: render component + admin editor + manifest + register in 3 files.
 
 ## Deployment
 
 Run `/deploy-init` in Claude for first-time server setup, then `/deploy` for updates.
 
-## Content
-
-Edit content through the admin panel or directly in these files:
-
-- Pages: `content/pages/*.json`
-- Site config: `content/site.json`
-- Uploads: `public/uploads/` (served directly by Next.js)
-
 ## Architecture
 
-See [ARCHITECTURE.md](ARCHITECTURE.md) for full system diagrams.
+See [ARCHITECTURE.md](ARCHITECTURE.md) for system diagrams and `CLAUDE.md` for the rules.
 ```
 
 ### Step 5: Install Dependencies
@@ -258,14 +288,17 @@ After everything succeeds, print:
 ```
 Site scaffolded successfully!
 
-  Repo:   https://github.com/{username}/{clientName}-site
-  Local:  npm run dev → http://localhost:3000
-  Admin:  http://localhost:3000/admin
+  Repo:     https://github.com/{username}/{clientName}-site
+  Theme:    {chosen theme preset}
+  Local:    npm run dev → http://localhost:3000
+  Admin:    http://localhost:3000/admin
+  Preview:  http://localhost:3000/ui-preview  (theme switcher)
 
 Next steps:
   1. Run `npm run dev` to start developing
-  2. Customize the site with Claude
-  3. Run `/deploy-init` when ready to deploy to production
+  2. Open /ui-preview to verify the theme looks right; change `theme.preset` in content/site.json if you want to try another
+  3. Continue customizing pages with Claude — content/pages/*.json
+  4. Run `/deploy-init` when ready to deploy to production
 ```
 
 ## Error Recovery
@@ -283,9 +316,10 @@ Next steps:
 - Do not open a browser
 - Do not SSH to any server
 - Do not create `.env` files (no secrets needed at this stage)
-- Do not modify the framework's CLAUDE.md or AGENTS.md
-- Do not modify ARCHITECTURE.md
-- Do not add extra dependencies beyond what the framework includes
+- Do not modify framework docs (`CLAUDE.md`, `AGENTS.md`, `AI_PLAYBOOK.md`, `DESIGN_TOOLKITS.md`, `ARCHITECTURE.md`)
+- **Do not add Tailwind, shadcn, base-ui, class-variance-authority, clsx, tailwind-merge, DaisyUI, Mantine, or any other CSS framework / component library.** The framework was deliberately built without one. UI tailoring happens through theme presets + the 12 primitives in `lib/ui/` + per-client custom blocks. See `DESIGN_TOOLKITS.md` for the forbidden-additions list and acceptable scoped libs.
+- Do not add extra runtime dependencies beyond what the framework includes unless the client genuinely needs them (and if so, add as a per-client custom block, not at the framework level).
+- Do not hand-roll JSX inside `app/(site)/` routes — extend the block system instead. If a block type doesn't exist, build a custom one in `client/blocks/`.
 - **Do not `rm -rf .git`** — framework update merges need the shared history
 - **Do not edit framework-zone files during scaffolding** (anything outside `client/`, `content/pages/`, `content/site.json`, `public/uploads/`, `package.json`, `README.md`, `deploy.json`). If the zone guard blocks something, you're in the wrong zone.
 - Do not edit the frozen `client/` stubs (`registry.ts`, `editor-registry.ts`, `gallery.ts`, `types.ts`, `theme.ts`) during scaffolding — leave them as empty stubs. Clients fill them in when they actually add a custom block.
